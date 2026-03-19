@@ -2945,7 +2945,7 @@ function fixImageSrcs(html) {
 function parseAnkiCards(text) {
   ankiCardIndex = {};
   const lines = text.split('\n');
-  let tagsColIdx = 18; // column 19 = index 18
+  let tagsColIdx = 19; // column 20 = index 19 (AnKing export default)
   for (const line of lines) {
     if (line.startsWith('#tags column:')) {
       tagsColIdx = parseInt(line.split(':')[1].trim()) - 1;
@@ -2963,10 +2963,10 @@ function parseAnkiCards(text) {
     const lectureField  = fixImageSrcs(cols[2]  || '');
     const sketchyField  = fixImageSrcs(cols[7]  || '');
     const resourceField = fixImageSrcs(cols[15] || '');
-    // Search ALL columns for UWorld tags — handles any column layout
-    const allCols = cols.join(' ');
-    // Match #UWorld followed by any number of ::word:: segments then ::ID
-    const idMatches = allCols.match(/#UWorld(?:::[^:\s\d][^:\s]*)*::(\d+)/g) || [];
+    // Search the tags column only; fall back to last column if index is out of range
+    const tagsCol = cols[tagsColIdx] || cols[cols.length - 1] || '';
+    // Match #UWorld followed by any ::word:: segments then ::ID (4+ digits = real UWorld ID)
+    const idMatches = tagsCol.match(/#UWorld(?:::[^:\s\d][^:\s]*)*::(\d{4,})/g) || [];
     const ids = [...new Set(idMatches.map(m => m.match(/::(\d+)$/)[1]))];
     if (!ids.length) continue;
     const card = { text: textField, extra: extraField, lectureNotes: lectureField, sketchy: sketchyField, additionalResources: resourceField };
