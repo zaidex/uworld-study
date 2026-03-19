@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UWorld Study Tracker</title>
+<title>ZWorld</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
@@ -68,7 +68,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 .main-group { border-bottom: 1px solid var(--border); }
 .main-header { display: flex; align-items: center; gap: 0.5rem; padding: 0.65rem 0.9rem; cursor: pointer; transition: background 0.12s; user-select: none; background: rgba(79,156,249,0.03); }
 .main-header:hover { background: rgba(79,156,249,0.08); }
-.main-arrow { font-size: 0.55rem; color: var(--accent); transition: transform 0.2s; flex-shrink: 0; }
+.main-arrow { display: flex; align-items: center; color: var(--accent); transition: transform 0.2s; flex-shrink: 0; }
 .main-arrow.open { transform: rotate(90deg); }
 .main-name { font-size: 0.84rem; font-weight: 600; color: var(--text); flex: 1; }
 .main-count { font-size: 0.65rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); flex-shrink: 0; }
@@ -81,7 +81,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 .system-group { border-top: 1px solid rgba(37,42,58,0.5); }
 .system-header { display: flex; align-items: center; gap: 0.45rem; padding: 0.5rem 0.9rem 0.5rem 1.7rem; cursor: pointer; transition: background 0.12s; user-select: none; }
 .system-header:hover { background: rgba(79,156,249,0.05); }
-.system-arrow { font-size: 0.5rem; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
+.system-arrow { display: flex; align-items: center; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
 .system-arrow.open { transform: rotate(90deg); }
 .system-name { font-size: 0.77rem; font-weight: 500; color: #94a3b8; flex: 1; line-height: 1.3; }
 .system-count { font-size: 0.62rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); flex-shrink: 0; }
@@ -99,7 +99,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 .subsec-name { font-size: 0.73rem; flex: 1; color: #6b7f9e; line-height: 1.3; }
 .subsec-item.active .subsec-name { color: var(--text); }
 .subsec-count { font-size: 0.6rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); flex-shrink: 0; }
-.subsec-flag { font-size: 0.6rem; color: #f59e0b; flex-shrink: 0; }
+.subsec-flag { font-size: 0.6rem; color: #a78bfa; flex-shrink: 0; }
 .subsec-notes-count { font-size: 0.6rem; color: var(--accent); flex-shrink: 0; }
 
 /* Flag button */
@@ -108,29 +108,121 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 .btn-flag.flagged { border-color: rgba(245,158,11,0.45); background: rgba(245,158,11,0.1); color: #f59e0b; }
 .q-flagged-badge { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.25); }
 
-/* Flagged sidebar panel */
-.flagged-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1.5rem; color: var(--muted); text-align: center; gap: 0.7rem; }
-.flagged-empty-icon { font-size: 2rem; opacity: 0.4; }
-.flagged-empty-text { font-size: 0.78rem; }
-.flagged-section-group { border-bottom: 1px solid var(--border); }
-.flagged-section-header { display: flex; align-items: center; gap: 0.4rem; padding: 0.55rem 0.9rem; cursor: pointer; user-select: none; background: rgba(245,158,11,0.03); transition: background 0.12s; }
-.flagged-section-header:hover { background: rgba(245,158,11,0.07); }
-.flagged-section-arrow { font-size: 0.5rem; color: #f59e0b; transition: transform 0.2s; flex-shrink: 0; }
-.flagged-section-arrow.open { transform: rotate(90deg); }
-.flagged-section-name { font-size: 0.78rem; font-weight: 600; color: #c4a85a; flex: 1; line-height: 1.3; }
-.flagged-section-count { font-size: 0.62rem; font-family: 'IBM Plex Mono', monospace; color: #f59e0b; }
-.flagged-section-items { display: none; }
-.flagged-section-items.open { display: block; }
-.flagged-q-item { display: flex; align-items: flex-start; gap: 0.5rem; padding: 0.5rem 0.9rem 0.5rem 1.8rem; cursor: pointer; transition: background 0.1s; border-left: 2px solid transparent; }
-.flagged-q-item:hover { background: rgba(245,158,11,0.05); border-left-color: rgba(245,158,11,0.3); }
-.flagged-q-item.active { background: rgba(245,158,11,0.08); border-left-color: #f59e0b; }
-.flagged-q-id { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: #f59e0b; flex-shrink: 0; padding-top: 0.1rem; }
-.flagged-q-preview { font-size: 0.72rem; color: #6b7f9e; line-height: 1.4; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.flagged-q-item:hover .flagged-q-preview, .flagged-q-item.active .flagged-q-preview { color: var(--text); }
-.flagged-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 0.55rem 0.9rem; border-bottom: 1px solid var(--border); background: var(--surface); position: sticky; top: 0; z-index: 5; }
-.flagged-total { font-size: 0.7rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); }
-.btn-clear-all { font-size: 0.68rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); background: transparent; border: 1px solid var(--border); border-radius: 4px; padding: 0.2rem 0.55rem; cursor: pointer; transition: all 0.15s; }
-.btn-clear-all:hover { color: var(--danger); border-color: var(--danger); }
+.sidebar-tab.review-tab.active { color: #a78bfa; border-bottom-color: #a78bfa; }
+.tab-badge.review-badge { background: rgba(167,139,250,0.15); color: #a78bfa; }
+
+/* ── DIFFICULTY BUTTONS ──────────────────────────────────────────────────────── */
+.diff-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.review-action-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.2rem; }
+.review-nav-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; flex-wrap: wrap; }
+.btn-review-l1, .btn-review-l2, .btn-review-l3 {
+  flex: 1; padding: 0.55rem 0.5rem; border-radius: 8px; font-size: 0.82rem;
+  font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface2); color: var(--muted);
+  transition: all 0.15s; text-align: center;
+}
+.btn-review-l1:hover, .btn-review-l1.active-l1 { background: rgba(96,165,250,0.15); border-color: #60a5fa; color: #60a5fa; }
+.btn-review-l2:hover, .btn-review-l2.active-l2 { background: rgba(251,146,60,0.15); border-color: #fb923c; color: #fb923c; }
+.btn-review-l3:hover, .btn-review-l3.active-l3 { background: rgba(167,139,250,0.15); border-color: #a78bfa; color: #a78bfa; }
+.btn-review-undo {
+  padding: 0.55rem 0.7rem; border-radius: 8px; font-size: 0.82rem;
+  font-family: 'IBM Plex Sans', sans-serif; cursor: pointer;
+  border: 1px solid var(--border); background: transparent; color: var(--muted);
+  transition: all 0.15s;
+}
+.btn-review-undo:hover { color: var(--text); border-color: var(--text); }
+.review-pos-text { font-size: 0.7rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); margin-left: auto; white-space: nowrap; }
+.diff-label { font-size: 0.72rem; color: var(--muted); font-family: 'IBM Plex Sans', sans-serif; flex-shrink: 0; }
+.btn-diff {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.38rem 0.75rem; border-radius: 7px; font-size: 0.76rem;
+  font-family: 'IBM Plex Sans', sans-serif; font-weight: 500; cursor: pointer;
+  transition: all 0.15s; border: 1px solid var(--border);
+  background: transparent; color: var(--muted);
+}
+.btn-diff:hover { opacity: 0.85; }
+.btn-diff.active-l1 { background: rgba(96,165,250,0.15); border-color: #60a5fa; color: #60a5fa; }
+.btn-diff.active-l2 { background: rgba(251,146,60,0.15); border-color: #fb923c; color: #fb923c; }
+.btn-diff.active-l3 { background: rgba(167,139,250,0.15); border-color: #a78bfa; color: #a78bfa; }
+.btn-graduate {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.38rem 0.85rem; border-radius: 7px; font-size: 0.76rem;
+  font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; cursor: pointer;
+  transition: all 0.15s; border: 1px solid rgba(62,207,142,0.4);
+  background: rgba(62,207,142,0.1); color: var(--green);
+  margin-left: 0.3rem;
+}
+.btn-graduate:hover { background: rgba(62,207,142,0.2); }
+.diff-badge-l1 { background: rgba(96,165,250,0.12); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+.diff-badge-l2 { background: rgba(251,146,60,0.12); color: #fb923c; border: 1px solid rgba(251,146,60,0.3); }
+.diff-badge-l3 { background: rgba(167,139,250,0.12); color: #a78bfa; border: 1px solid rgba(167,139,250,0.3); }
+
+/* ── REVIEW SIDEBAR PANEL ────────────────────────────────────────────────────── */
+#review-panel-sidebar { flex: 1; overflow-y: auto; display: none; padding: 0.75rem 0.75rem 1rem; }
+.review-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1.5rem; color: var(--muted); text-align: center; gap: 0.7rem; }
+.review-empty-icon { font-size: 2rem; opacity: 0.4; }
+
+/* Level cards */
+.review-level-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 0.6rem; overflow: hidden;
+}
+.review-level-card-header {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.7rem 0.85rem; cursor: pointer; user-select: none;
+  transition: background 0.12s;
+}
+.review-level-card-header:hover { background: rgba(255,255,255,0.03); }
+.review-level-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.review-level-dot.l1 { background: #60a5fa; }
+.review-level-dot.l2 { background: #fb923c; }
+.review-level-dot.l3 { background: #a78bfa; }
+.review-level-info { flex: 1; min-width: 0; }
+.review-level-title { font-size: 0.8rem; font-weight: 600; color: var(--text); }
+.review-level-title.l1 { color: #60a5fa; }
+.review-level-title.l2 { color: #fb923c; }
+.review-level-title.l3 { color: #a78bfa; }
+.review-level-subtitle { font-size: 0.64rem; color: var(--muted); margin-top: 0.05rem; }
+.review-level-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem; }
+.review-level-progress-text { font-size: 0.62rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); }
+.review-level-pbar { width: 48px; height: 3px; background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden; }
+.review-level-pbar-fill { height: 100%; border-radius: 99px; transition: width 0.3s; }
+.review-level-pbar-fill.l1 { background: #60a5fa; }
+.review-level-pbar-fill.l2 { background: #fb923c; }
+.review-level-pbar-fill.l3 { background: #a78bfa; }
+.review-level-chevron { display: flex; align-items: center; color: var(--muted); transition: transform 0.2s; margin-left: 0.2rem; }
+.review-level-chevron.open { transform: rotate(180deg); }
+.review-level-body { display: none; border-top: 1px solid var(--border); }
+.review-level-body.open { display: block; }
+.review-start-btn {
+  display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+  width: calc(100% - 1.4rem); margin: 0.6rem 0.7rem;
+  padding: 0.5rem; border-radius: 7px; border: none; cursor: pointer;
+  font-size: 0.76rem; font-family: 'IBM Plex Sans', sans-serif; font-weight: 600;
+  transition: opacity 0.15s;
+}
+.review-start-btn:hover { opacity: 0.85; }
+.review-start-btn.l1 { background: rgba(96,165,250,0.15); color: #60a5fa; }
+.review-start-btn.l2 { background: rgba(251,146,60,0.15); color: #fb923c; }
+.review-start-btn.l3 { background: rgba(167,139,250,0.15); color: #a78bfa; }
+
+/* Subsection rows inside level */
+.review-subsec-row {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.45rem 0.85rem; cursor: pointer;
+  transition: background 0.1s; border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.review-subsec-row:last-child { border-bottom: none; }
+.review-subsec-row:hover { background: rgba(255,255,255,0.03); }
+.review-subsec-row.active { background: rgba(167,139,250,0.07); }
+.review-subsec-row-info { flex: 1; min-width: 0; }
+.review-subsec-row-name { font-size: 0.72rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.review-subsec-row-meta { font-size: 0.6rem; color: var(--muted); margin-top: 0.05rem; }
+.review-subsec-row-count { font-size: 0.62rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); flex-shrink: 0; }
+.review-subsec-row-done { font-size: 0.62rem; font-family: 'IBM Plex Mono', monospace; flex-shrink: 0; }
+.review-subsec-row-done.l1 { color: #60a5fa; }
+.review-subsec-row-done.l2 { color: #fb923c; }
+.review-subsec-row-done.l3 { color: #a78bfa; }
 
 /* Font size control */
 
@@ -442,6 +534,9 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
   }
   .btn-flag { padding: 0.5rem 0.85rem; }
   .q-id-btn { padding: 0.5rem 0.85rem; }
+  .review-action-row { width: 100%; gap: 0.4rem; }
+  .review-nav-row { width: 100%; }
+  .btn-graduate { margin-left: 0; }
 
   /* ─── FIXED PREV/NEXT BAR: at the very bottom of the screen ─── */
   .mobile-q-bar {
@@ -872,9 +967,85 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 .mh-no-activity {
   font-size: 0.78rem; color: var(--muted); text-align: center; padding: 1rem 0;
 }
+/* ── AUTH SCREEN ─────────────────────────────────────────────────────────────── */
+#auth-screen {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999; padding: 1.5rem;
+}
+.auth-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 2.5rem 2rem; width: 100%; max-width: 380px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+}
+.auth-logo { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--accent); letter-spacing: 0.15em; margin-bottom: 1.5rem; }
+.auth-title { font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
+.auth-subtitle { font-size: 0.83rem; color: var(--muted); margin-bottom: 1.8rem; }
+.auth-input {
+  display: block; width: 100%; box-sizing: border-box;
+  padding: 0.72rem 0.9rem; margin-bottom: 0.75rem;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-size: 0.9rem; font-family: 'IBM Plex Sans', sans-serif;
+  outline: none; transition: border-color 0.15s;
+}
+.auth-input:focus { border-color: var(--accent); }
+.auth-input::placeholder { color: var(--muted); }
+.auth-btn {
+  display: block; width: 100%; padding: 0.78rem; margin-top: 0.25rem;
+  background: var(--accent); color: #fff; border: none; border-radius: 8px;
+  font-size: 0.92rem; font-family: 'IBM Plex Sans', sans-serif; font-weight: 600;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.auth-btn:hover { opacity: 0.88; }
+.auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.auth-links { display: flex; justify-content: space-between; margin-top: 1rem; flex-wrap: wrap; gap: 0.5rem; }
+.auth-link { background: none; border: none; color: var(--muted); font-size: 0.78rem; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif; padding: 0; }
+.auth-link:hover { color: var(--accent); }
+.auth-error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #f87171; border-radius: 7px; padding: 0.6rem 0.85rem; font-size: 0.8rem; margin-bottom: 1rem; }
+.auth-success { background: rgba(62,207,142,0.1); border: 1px solid rgba(62,207,142,0.3); color: var(--green); border-radius: 7px; padding: 0.6rem 0.85rem; font-size: 0.8rem; margin-bottom: 1rem; }
 </style>
 </head>
 <body>
+
+<!-- ── LOGIN SCREEN ──────────────────────────────────────────────────────── -->
+<div id="auth-screen" style="display:none">
+  <div class="auth-card">
+    <div class="auth-logo">UW // STUDY</div>
+    <div class="auth-title" id="auth-title">Welcome back</div>
+    <div class="auth-subtitle" id="auth-subtitle">Sign in to continue</div>
+
+    <div id="auth-error" class="auth-error" style="display:none"></div>
+    <div id="auth-success" class="auth-success" style="display:none"></div>
+
+    <div id="auth-form-login">
+      <input class="auth-input" id="login-email" type="email" placeholder="Email" autocomplete="email">
+      <input class="auth-input" id="login-password" type="password" placeholder="Password" autocomplete="current-password">
+      <button class="auth-btn" id="login-btn" onclick="handleLogin()">Sign In</button>
+      <div class="auth-links">
+        <button class="auth-link" onclick="showForgot()">Forgot password?</button>
+        <button class="auth-link" onclick="showSignup()">Create account</button>
+      </div>
+    </div>
+
+    <div id="auth-form-signup" style="display:none">
+      <input class="auth-input" id="signup-email" type="email" placeholder="Email" autocomplete="email">
+      <input class="auth-input" id="signup-password" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password">
+      <input class="auth-input" id="signup-confirm" type="password" placeholder="Confirm password" autocomplete="new-password">
+      <button class="auth-btn" id="signup-btn" onclick="handleSignup()">Create Account</button>
+      <div class="auth-links">
+        <button class="auth-link" onclick="showLogin()">Already have an account?</button>
+      </div>
+    </div>
+
+    <div id="auth-form-forgot" style="display:none">
+      <input class="auth-input" id="forgot-email" type="email" placeholder="Your email">
+      <button class="auth-btn" onclick="handleForgot()">Send Reset Link</button>
+      <div class="auth-links">
+        <button class="auth-link" onclick="showLogin()">Back to sign in</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="header">
   <button class="sidebar-toggle-btn" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
@@ -883,7 +1054,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
   <button class="btn-home" onclick="showHome()" title="Dashboard">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
   </button>
-  <div class="header-brand">UW // STUDY</div>
+  <div class="header-brand">ZWorld</div>
   <div class="progress-wrap">
     <div class="progress-label"><span>Overall Progress</span><span id="progress-text">0 / 0</span></div>
     <div class="progress-bar-track"><div class="progress-bar-fill" id="global-bar" style="width:0%"></div></div>
@@ -906,6 +1077,8 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
         <div class="settings-item" onclick="importProgress()">⬆ Import progress</div>
         <div class="settings-divider"></div>
         <div class="settings-item danger" onclick="confirmReset()">✕ Reset all progress</div>
+        <div class="settings-divider"></div>
+        <div class="settings-item" onclick="signOut()" id="logout-btn" style="display:none">⎋ Sign out <span id="logout-email" style="font-size:0.65rem;color:var(--muted)"></span></div>
       </div>
     </div>
   </div>
@@ -915,13 +1088,13 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
   <div class="sidebar" id="sidebar">
     <div class="sidebar-tabs">
       <button class="sidebar-tab active" id="tab-sections" onclick="switchTab('sections')">Sections</button>
-      <button class="sidebar-tab flagged-tab" id="tab-flagged" onclick="switchTab('flagged')">Flagged <span class="tab-badge" id="flag-tab-badge" style="display:none">0</span></button>
+      <button class="sidebar-tab review-tab" id="tab-review" onclick="switchTab('review')">Review <span class="tab-badge review-badge" id="review-tab-badge" style="display:none">0</span></button>
     </div>
     <div id="sections-panel">
       <div class="sidebar-search"><input type="text" id="search-input" placeholder="Search sections…" oninput="filterSidebar(this.value)"></div>
       <div id="section-list"></div>
     </div>
-    <div id="flagged-panel-sidebar"></div>
+    <div id="review-panel-sidebar"></div>
   </div>
   <div class="main-content" id="main-content">
     <div class="empty-state">
@@ -934,7 +1107,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
   </div>
 </div>
 
-<div id="anki-status"><div class="status-dot"></div><span id="anki-text">Anki: checking…</span></div>
+<div id="anki-status" style="display:none"><div class="status-dot"></div><span id="anki-text">Anki: checking…</span></div>
 <div id="toast"></div>
 <div id="img-lightbox" onclick="closeLightbox()"><button id="img-lightbox-close" onclick="closeLightbox()">✕</button><img id="img-lightbox-img" src="" alt=""></div>
 
@@ -971,8 +1144,8 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
             <span class="stat-pill-label">Done Today</span>
             <span class="stat-pill-value" id="hs-today">—</span>
           </div>
-          <div class="stat-pill amber">
-            <span class="stat-pill-label">Flagged</span>
+          <div class="stat-pill" style="--pill-color:#a78bfa;--pill-bg:rgba(167,139,250,0.1)">
+            <span class="stat-pill-label">Review</span>
             <span class="stat-pill-value" id="hs-flags">—</span>
           </div>
           <div class="stat-pill blue">
@@ -1021,7 +1194,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 
     <!-- Greeting -->
     <div class="mh-greeting">
-      <div class="mh-greeting-label">UW // STUDY</div>
+      <div class="mh-greeting-label">ZWorld</div>
       <div class="mh-greeting-big">Welcome back</div>
       <div class="mh-greeting-sub" id="mh-subtitle">Loading…</div>
       <div class="mh-date" id="mh-date"></div>
@@ -1039,9 +1212,9 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
         <div class="mh-stat-value" id="mh-today">—</div>
         <div class="mh-stat-label">Done Today</div>
       </div>
-      <div class="mh-stat amber">
+      <div class="mh-stat" style="--ms-color:#a78bfa">
         <div class="mh-stat-value" id="mh-flags">—</div>
-        <div class="mh-stat-label">Flagged</div>
+        <div class="mh-stat-label">Review</div>
       </div>
       <div class="mh-stat blue">
         <div class="mh-stat-value" id="mh-notes">—</div>
@@ -1094,7 +1267,117 @@ const TOTAL_Q = ALL_SUBSECS.reduce((a,s) => a + s.questions.length, 0);
 // ── SUPABASE CONFIG ───────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://zntsdupdisvudbotnqwb.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpudHNkdXBkaXN2dWRib3RucXdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyOTgzOTMsImV4cCI6MjA4ODg3NDM5M30.78AB6Zmc6iz60TDBwlIzh0ZyOat4rn30_9o1N0Ly7tU';
-const HEADERS = { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY };
+
+// Auth state
+let authSession = null; // { access_token, refresh_token, user }
+
+function getHeaders(useAuth = true) {
+  const token = (useAuth && authSession) ? authSession.access_token : SUPABASE_KEY;
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + token
+  };
+}
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+const AUTH_SESSION_KEY = 'uworld_auth_session';
+
+function saveSession(session) {
+  authSession = session;
+  try { localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session)); } catch(e) {}
+}
+
+function loadSession() {
+  try {
+    const s = localStorage.getItem(AUTH_SESSION_KEY);
+    if (s) { authSession = JSON.parse(s); return true; }
+  } catch(e) {}
+  return false;
+}
+
+function clearSession() {
+  authSession = null;
+  try { localStorage.removeItem(AUTH_SESSION_KEY); } catch(e) {}
+}
+
+async function refreshSession() {
+  if (!authSession?.refresh_token) return false;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ refresh_token: authSession.refresh_token })
+    });
+    if (!res.ok) { clearSession(); return false; }
+    const data = await res.json();
+    saveSession({ access_token: data.access_token, refresh_token: data.refresh_token, user: data.user });
+    return true;
+  } catch(e) { return false; }
+}
+
+async function signIn(email, password) {
+  let res, data;
+  try {
+    res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ email, password })
+    });
+    data = await res.json();
+  } catch(e) {
+    throw new Error('Network error — check your internet connection.');
+  }
+  if (!res.ok) throw new Error(data.error_description || data.message || data.msg || 'Login failed');
+  saveSession({ access_token: data.access_token, refresh_token: data.refresh_token, user: data.user });
+}
+
+async function signUp(email, password) {
+  let res, data;
+  try {
+    res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ email, password })
+    });
+    data = await res.json();
+  } catch(e) {
+    throw new Error('Network error — check your internet connection. If on GitHub Pages, make sure your site URL is added in Supabase → Authentication → Settings → Site URL.');
+  }
+  if (!res.ok) throw new Error(data.error_description || data.message || data.msg || JSON.stringify(data));
+  if (data.access_token) {
+    saveSession({ access_token: data.access_token, refresh_token: data.refresh_token, user: data.user });
+  } else if (data.id) {
+    // Account created but email confirmation required
+    throw new Error('Account created! Check your email to confirm, then sign in.');
+  } else {
+    throw new Error('Unexpected response: ' + JSON.stringify(data));
+  }
+}
+
+async function signOut() {
+  try {
+    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+      method: 'POST',
+      headers: getHeaders()
+    });
+  } catch(e) {}
+  clearSession();
+  showLoginScreen();
+}
+
+async function sendPasswordReset(email) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+    body: JSON.stringify({ email })
+  });
+  if (!res.ok) { const d = await res.json(); throw new Error(d.error_description || 'Failed'); }
+}
+
+function getUserId() {
+  return authSession?.user?.id || 'anonymous';
+}
 
 // ── PROGRESS ─────────────────────────────────────────────────────────────────
 const STORAGE_KEY  = 'uworld_v4_done';
@@ -1102,13 +1385,15 @@ const FLAGS_KEY    = 'uworld_v4_flags';
 const NOTES_KEY    = 'uworld_v4_notes';
 const IMAGES_KEY   = 'uworld_v4_images';
 const HIGHLIGHTS_KEY = 'uworld_v4_highlights';
+const REVIEW_DONE_KEY = 'uworld_v4_reviewdone';
 const USER_ID_KEY  = 'uworld_user_id';
 
 let done  = {};
 let flags = {};
-let notes = {};       // key: "note-si-qi" → string
-let images = {};      // key: "imgs-si-qi" → [base64...]
-let highlights = {};  // key: "hl-si-qi"   → [{start, end, color}]
+let notes = {};
+let images = {};
+let highlights = {};
+let reviewDone = {}; // key: "lvl-si-qi" → true (visited during review)
 let syncTimer = null;
 let isSyncing = false;
 
@@ -1142,43 +1427,32 @@ function saveProgress() {
     localStorage.setItem(NOTES_KEY,   JSON.stringify(notes));
     localStorage.setItem(IMAGES_KEY,  JSON.stringify(images));
     localStorage.setItem(HIGHLIGHTS_KEY, JSON.stringify(highlights));
+    localStorage.setItem(REVIEW_DONE_KEY, JSON.stringify(reviewDone));
   } catch(e) {}
   clearTimeout(syncTimer);
   syncTimer = setTimeout(syncToCloud, 1500);
 }
 
 async function syncToCloud() {
-  if (isSyncing) return;
+  if (isSyncing || !authSession) return;
   isSyncing = true;
   setSyncStatus('syncing');
   try {
     const uid = getUserId();
-    // Try with daily_counts + highlights first; fall back progressively if columns don't exist
-    let body = { user_id: uid, done, flags, notes, images, daily_counts: getDailyCounts(), highlights, updated_at: new Date().toISOString() };
-    let res = await fetch(`${SUPABASE_URL}/rest/v1/progress`, {
+    const body = {
+      auth_user_id: uid,
+      user_id: uid,
+      done, flags, notes, images,
+      daily_counts: getDailyCounts(),
+      highlights,
+      updated_at: new Date().toISOString()
+    };
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress`, {
       method: 'POST',
-      headers: { ...HEADERS, 'Prefer': 'resolution=merge-duplicates' },
+      headers: { ...getHeaders(), 'Prefer': 'resolution=merge-duplicates' },
       body: JSON.stringify(body)
     });
-    if (!res.ok) {
-      // Retry without highlights in case column doesn't exist yet
-      body = { user_id: uid, done, flags, notes, images, daily_counts: getDailyCounts(), updated_at: new Date().toISOString() };
-      res = await fetch(`${SUPABASE_URL}/rest/v1/progress`, {
-        method: 'POST',
-        headers: { ...HEADERS, 'Prefer': 'resolution=merge-duplicates' },
-        body: JSON.stringify(body)
-      });
-    }
-    if (!res.ok) {
-      // Retry without daily_counts either
-      body = { user_id: uid, done, flags, notes, images, updated_at: new Date().toISOString() };
-      res = await fetch(`${SUPABASE_URL}/rest/v1/progress`, {
-        method: 'POST',
-        headers: { ...HEADERS, 'Prefer': 'resolution=merge-duplicates' },
-        body: JSON.stringify(body)
-      });
-      if (!res.ok) throw new Error(await res.text());
-    }
+    if (!res.ok) throw new Error(await res.text());
     setSyncStatus('synced');
   } catch(e) {
     setSyncStatus('error');
@@ -1187,17 +1461,11 @@ async function syncToCloud() {
 }
 
 async function loadFromCloud() {
+  if (!authSession) return;
   setSyncStatus('syncing');
   try {
-    const uid = getUserId();
-    // Try fetching with daily_counts + highlights; fall back without them
-    let res = await fetch(`${SUPABASE_URL}/rest/v1/progress?user_id=eq.${uid}&select=done,flags,notes,images,daily_counts,highlights`, { headers: HEADERS });
-    if (!res.ok) {
-      res = await fetch(`${SUPABASE_URL}/rest/v1/progress?user_id=eq.${uid}&select=done,flags,notes,images,daily_counts`, { headers: HEADERS });
-    }
-    if (!res.ok) {
-      res = await fetch(`${SUPABASE_URL}/rest/v1/progress?user_id=eq.${uid}&select=done,flags,notes,images`, { headers: HEADERS });
-    }
+    // RLS ensures we only get our own row — no need to filter by ID in URL
+    let res = await fetch(`${SUPABASE_URL}/rest/v1/progress?select=done,flags,notes,images,daily_counts,highlights&order=updated_at.desc&limit=1`, { headers: getHeaders() });
     if (!res.ok) throw new Error(await res.text());
     const rows = await res.json();
     if (rows.length > 0) {
@@ -1206,7 +1474,6 @@ async function loadFromCloud() {
       notes  = rows[0].notes  || {};
       images = rows[0].images || {};
       if (rows[0].highlights) highlights = rows[0].highlights;
-      // Merge cloud daily_counts with local (take max for each day)
       if (rows[0].daily_counts) {
         const cloudCounts = rows[0].daily_counts;
         const localCounts = getDailyCounts();
@@ -1257,6 +1524,7 @@ function loadProgress() {
   try { const r = localStorage.getItem(NOTES_KEY);   if (r) notes  = JSON.parse(r); } catch(e) { notes  = {}; }
   try { const r = localStorage.getItem(IMAGES_KEY);  if (r) images = JSON.parse(r); } catch(e) { images = {}; }
   try { const r = localStorage.getItem(HIGHLIGHTS_KEY); if (r) highlights = JSON.parse(r); } catch(e) { highlights = {}; }
+  try { const r = localStorage.getItem(REVIEW_DONE_KEY); if (r) reviewDone = JSON.parse(r); } catch(e) { reviewDone = {}; }
 }
 
 // ── SYNC STATUS INDICATOR ─────────────────────────────────────────────────────
@@ -1271,6 +1539,7 @@ function setSyncStatus(state) {
 function flagCountForSubsec(si) {
   return ALL_SUBSECS[si].questions.filter((_,qi) => flags[`${si}-${qi}`]).length;
 }
+function diffCountForSubsec(si) { return flagCountForSubsec(si); }
 
 function notesCountForSubsec(si) {
   return ALL_SUBSECS[si].questions.filter((_,qi) =>
@@ -1328,7 +1597,7 @@ function renderSidebar(filter='') {
     const mainHeader = document.createElement('div');
     mainHeader.className = 'main-header';
     mainHeader.innerHTML = `
-      <div class="main-arrow ${isMainOpen?'open':''}">▶</div>
+      <div class="main-arrow ${isMainOpen?'open':''}"><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg></div>
       <div class="main-name">${main}</div>
       <div class="main-pbar"><div class="main-pbar-fill" style="width:${mainPct}%"></div></div>
       <div class="main-count">${mainDone}/${mainTotal} <span style="color:var(--green);margin-left:0.2em">${mainPct}%</span></div>
@@ -1353,7 +1622,7 @@ function renderSidebar(filter='') {
       const sysHeader = document.createElement('div');
       sysHeader.className = 'system-header';
       sysHeader.innerHTML = `
-        <div class="system-arrow ${isSysOpen?'open':''}">▶</div>
+        <div class="system-arrow ${isSysOpen?'open':''}"><svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg></div>
         <div class="system-name">${sys}</div>
         ${sysAllDone ? `<div class="sys-done-check">✓</div>` : ''}
         <div class="system-count">${sysDone}/${sysTotal}</div>
@@ -1376,7 +1645,7 @@ function renderSidebar(filter='') {
         item.innerHTML = `
           <div class="subsec-check ${checkClass}">${checkSym}</div>
           <div class="subsec-name">${subsec}</div>
-          ${flagCountForSubsec(si) > 0 ? `<div class="subsec-flag">${flagCountForSubsec(si)}</div>` : ''}
+          ${flagCountForSubsec(si) > 0 ? `<div class="subsec-flag" title="${flagCountForSubsec(si)} in review">${flagCountForSubsec(si)}</div>` : ''}
           ${notesCountForSubsec(si) > 0 ? `<div class="subsec-notes-count">${notesCountForSubsec(si)}</div>` : ''}
           <div class="subsec-count">${dc}/${total}</div>
         `;
@@ -1409,6 +1678,7 @@ function filterSidebar(val) { renderSidebar(val); }
 
 // ── OPEN SUBSECTION ──────────────────────────────────────────────────────────
 function openSubsec(si) {
+  reviewMode = false; reviewHistory = []; reviewList = []; // exit review mode when opening a section normally
   currentSubsec = si;
   const sec = ALL_SUBSECS[si];
   let startQ = 0;
@@ -1448,11 +1718,10 @@ function renderQuestion() {
   const total = sec.questions.length;
   const dc = doneCountForSubsec(currentSubsec);
   const pct = total ? Math.round(dc/total*100) : 0;
-  const allDone = dc === total;
+  const allDone = !reviewMode && (dc === total);
 
   const q = sec.questions[currentQ];
   const isDone = !!done[`${currentSubsec}-${currentQ}`];
-  const isFlagged = !!flags[`${currentSubsec}-${currentQ}`];
   const isLast = currentQ === total - 1;
 
   const noteKey = `note-${currentSubsec}-${currentQ}`;
@@ -1461,9 +1730,34 @@ function renderQuestion() {
   const imgList = images[imgKey] || [];
   const hasContent = noteVal.trim() || imgList.length > 0;
 
+  const LEVEL_LABELS = ['','Review once','Review often','Master later'];
+  const LEVEL_COLORS = ['','#60a5fa','#fb923c','#a78bfa'];
+
+  // Progress display
+  let displayPct, displayText, displayColor, displayBanner;
+  if (reviewMode) {
+    const revPct = reviewOriginalCount ? Math.round(reviewPos / reviewOriginalCount * 100) : 0;
+    displayPct = revPct;
+    displayText = `${reviewPos} / ${reviewOriginalCount} reviewed (${revPct}%)`;
+    displayColor = LEVEL_COLORS[reviewLevel];
+    displayBanner = '';
+  } else {
+    displayPct = pct;
+    displayText = `${dc} / ${total} (${pct}%)`;
+    displayColor = 'var(--green)';
+    displayBanner = allDone
+      ? `<div class="done-banner"><div class="done-banner-icon">✓</div><div class="done-banner-text">Section complete! All ${total} questions done.</div></div>`
+      : '';
+  }
+
   let html = `<div class="q-view-wrap">
     <div class="sec-header">
-      <button class="mobile-back-btn" onclick="mobileNav('sections')">← Sections</button>
+      <button class="mobile-back-btn" onclick="exitReviewMode(false);mobileNav('sections')">← Sections</button>
+      ${reviewMode ? `
+        <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;flex-wrap:wrap">
+          <span style="font-size:0.68rem;font-family:'IBM Plex Mono',monospace;padding:0.2rem 0.6rem;border-radius:99px;background:rgba(167,139,250,0.12);color:#a78bfa;border:1px solid rgba(167,139,250,0.3)">REVIEW MODE</span>
+          <span style="font-size:0.68rem;font-family:'IBM Plex Mono',monospace;color:${LEVEL_COLORS[reviewLevel]}">L${reviewLevel} — ${LEVEL_LABELS[reviewLevel]}</span>
+        </div>` : ''}
       <div class="breadcrumb">
         <span class="b-main">${sec.mainKey}</span>
         <span class="b-sep">/</span>
@@ -1473,39 +1767,51 @@ function renderQuestion() {
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:0.8rem;flex-wrap:wrap">
         <div class="sec-title">${sec.subsecKey}</div>
-        <button class="btn-reset-subsec" onclick="resetSubsec()">↺ Reset section</button>
+        ${!reviewMode ? `<button class="btn-reset-subsec" onclick="resetSubsec()">↺ Reset section</button>` : ''}
       </div>
       <div class="sec-prog-row">
-        <div class="sec-prog-bar"><div class="sec-prog-fill" style="width:${pct}%"></div></div>
-        <div class="sec-prog-text">${dc} / ${total} (${pct}%)</div>
+        <div class="sec-prog-bar"><div class="sec-prog-fill" style="width:${displayPct}%;background:${displayColor}"></div></div>
+        <div class="sec-prog-text">${displayText}</div>
       </div>
     </div>
   `;
 
-  if (allDone) {
-    html += `<div class="done-banner"><div class="done-banner-icon">✓</div><div class="done-banner-text">Section complete! All ${total} questions done.</div></div>`;
-  }
+  html += displayBanner;
 
   html += `
-    <div class="q-card${isFlagged ? ' flagged-card' : ''}">
+    <div class="q-card">
       <div class="q-meta">
-        <div class="q-badge q-num">Q ${currentQ+1} / ${total}</div>
+        <div class="q-badge q-num">${reviewMode ? `${reviewPos+1} / ${reviewOriginalCount}` : `Q ${currentQ+1} / ${total}`}</div>
         ${q.topic && !q.objective.toLowerCase().startsWith(q.topic.toLowerCase().slice(0,12)) ? `<div class="q-badge q-topic-badge">${q.topic}</div>` : ''}
-        ${isDone ? '<div class="q-badge q-done-badge">✓ Done</div>' : ''}
-        ${isFlagged ? '<div class="q-badge q-flagged-badge">Flagged</div>' : ''}
-        ${isDone ? `<button class="btn-reset-q" onclick="unseeQ()" title="Reset this question">↺ Reset</button>` : ''}
+        ${!reviewMode && isDone ? '<div class="q-badge q-done-badge">✓ Done</div>' : ''}
+        ${getDiff(currentSubsec,currentQ) ? `<div class="q-badge diff-badge-l${getDiff(currentSubsec,currentQ)}">L${getDiff(currentSubsec,currentQ)}</div>` : ''}
+        ${!reviewMode && isDone ? `<button class="btn-reset-q" onclick="unseeQ()" title="Reset this question">↺ Reset</button>` : ''}
       </div>
       <div class="q-objective">${q.objective}</div>
       <div class="q-footer">
         <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap">
           <button class="q-id-btn" onclick="openInAnki('${q.id}')">${q.id}</button>
-          <button class="btn-flag ${isFlagged?'flagged':''}" onclick="toggleFlag()">${isFlagged ? '⚑ Flagged' : '⚑ Flag'}</button>
           <span class="anki-flash" id="anki-flash">Opened in Anki ✓</span>
+        </div>
+        ${reviewMode ? `
+        <div class="review-nav-row">
+          <button class="btn-review-l1${getDiff(currentSubsec,currentQ)===1?' active-l1':''}" onclick="reviewAssign(1)">L1</button>
+          <button class="btn-review-l2${getDiff(currentSubsec,currentQ)===2?' active-l2':''}" onclick="reviewAssign(2)">L2</button>
+          <button class="btn-review-l3${getDiff(currentSubsec,currentQ)===3?' active-l3':''}" onclick="reviewAssign(3)">L3</button>
+          <button class="btn-graduate" onclick="graduateQ()">Graduate ✓</button>
+          ${reviewHistory.length>0?`<button class="btn-review-undo" onclick="reviewUndo()">↩</button>`:''}
+          <span class="review-pos-text">${reviewPos+1} / ${reviewOriginalCount}</span>
+        </div>` : `
+        <div class="diff-row">
+          <span class="diff-label">Difficulty:</span>
+          <button class="btn-diff${getDiff(currentSubsec,currentQ)===1?' active-l1':''}" onclick="setDiff(1)">L1</button>
+          <button class="btn-diff${getDiff(currentSubsec,currentQ)===2?' active-l2':''}" onclick="setDiff(2)">L2</button>
+          <button class="btn-diff${getDiff(currentSubsec,currentQ)===3?' active-l3':''}" onclick="setDiff(3)">L3</button>
         </div>
         <div class="q-nav">
           <button class="btn-prev" onclick="prevQ()" ${currentQ===0?'disabled':''}>← Prev</button>
           <button class="btn-next" onclick="nextQ()">${isLast ? '✓ Finish' : 'Next →'}</button>
-        </div>
+        </div>`}
       </div>
     </div>
 
@@ -1541,11 +1847,18 @@ function renderQuestion() {
   const mprev = document.getElementById('mobile-q-prev');
   const mnext = document.getElementById('mobile-q-next');
   if (bar && isMobile()) {
-    bar.style.display = 'flex';
-    const nav = document.querySelector('.mobile-nav');
-    if (nav) nav.style.display = 'none';
-    if (mprev) mprev.disabled = (currentQ === 0);
-    if (mnext) mnext.textContent = isLast ? '✓ Finish' : 'Next →';
+    if (reviewMode) {
+      // In review mode, level buttons are the navigation — hide prev/next bar
+      bar.style.display = 'none';
+      const nav = document.querySelector('.mobile-nav');
+      if (nav) nav.style.display = 'none';
+    } else {
+      bar.style.display = 'flex';
+      const nav = document.querySelector('.mobile-nav');
+      if (nav) nav.style.display = 'none';
+      if (mprev) mprev.disabled = (currentQ === 0);
+      if (mnext) mnext.textContent = isLast ? '✓ Finish' : 'Next →';
+    }
   } else if (bar) {
     bar.style.display = 'none';
   }
@@ -1556,56 +1869,137 @@ let currentTab = 'sections';
 function switchTab(tab) {
   currentTab = tab;
   document.getElementById('tab-sections').classList.toggle('active', tab==='sections');
-  document.getElementById('tab-flagged').classList.toggle('active', tab==='flagged');
+  document.getElementById('tab-review').classList.toggle('active', tab==='review');
   document.getElementById('sections-panel').style.display = tab==='sections' ? 'flex' : 'none';
-  document.getElementById('flagged-panel-sidebar').style.display = tab==='flagged' ? 'block' : 'none';
-  if (tab==='flagged') renderFlaggedSidebar();
+  document.getElementById('review-panel-sidebar').style.display = tab==='review' ? 'block' : 'none';
+  if (tab==='review') renderReviewSidebar();
 }
 
 // ── FLAGGED SIDEBAR ───────────────────────────────────────────────────────────
-function renderFlaggedSidebar() {
-  const panel = document.getElementById('flagged-panel-sidebar');
-  const totalFlags = totalFlagCount();
+// ── DIFFICULTY SYSTEM ─────────────────────────────────────────────────────────
+// flags object repurposed: flags["si-qi"] = 1|2|3 (difficulty level)
+// Migrate old boolean flags → level 1
+function migrateFlagsToLevels() {
+  for (const key of Object.keys(flags)) {
+    if (flags[key] === true) flags[key] = 1;
+  }
+}
 
-  // Update tab badge
-  const badge = document.getElementById('flag-tab-badge');
-  badge.textContent = totalFlags;
-  badge.style.display = totalFlags > 0 ? '' : 'none';
+function getDiff(si, qi) {
+  return flags[`${si}-${qi}`] || 0;
+}
 
-  if (totalFlags === 0) {
-    panel.innerHTML = `<div class="flagged-empty"><div class="flagged-empty-icon">—</div><div class="flagged-empty-text">No flagged questions yet.<br>Press <strong>F</strong> or click Flag on any question.</div></div>`;
+function setDiff(level) {
+  const key = `${currentSubsec}-${currentQ}`;
+  if (flags[key] === level) {
+    delete flags[key]; // toggle off if same level clicked
+  } else {
+    flags[key] = level;
+  }
+  saveProgress();
+  updateReviewBadge();
+  renderQuestion();
+}
+
+// In review mode: choosing level just marks pending
+function reviewSetDiff(level) { reviewChooseLevel(level); }
+
+function totalDiffCount() { return Object.keys(flags).length; }
+function diffCountForLevel(lvl) { return Object.values(flags).filter(v => v === lvl).length; }
+function updateReviewBadge() {
+  const total = totalDiffCount();
+  const badge = document.getElementById('review-tab-badge');
+  if (badge) { badge.textContent = total; badge.style.display = total > 0 ? '' : 'none'; }
+}
+function updateFlagBadge() { updateReviewBadge(); }
+function renderFlaggedSidebar() { renderReviewSidebar(); }
+function jumpToFlagged(si, qi) { jumpToReview(si, qi); }
+function toggleFlag() {
+  const key = `${currentSubsec}-${currentQ}`;
+  if (flags[key]) delete flags[key]; else flags[key] = 1;
+  saveProgress(); updateReviewBadge(); renderQuestion();
+}
+function clearAllFlags() {
+  if (!confirm('Clear ALL difficulty assignments?')) return;
+  Object.keys(flags).forEach(k => delete flags[k]);
+  saveProgress(); renderReviewSidebar(); updateReviewBadge();
+}
+function totalFlagCount() { return totalDiffCount(); }
+
+function jumpToReview(si, qi, lvl) {
+  const level = lvl || flags[`${si}-${qi}`] || 1;
+  startReviewMode(level, si !== undefined ? si : undefined);
+}
+
+function renderReviewSidebar() {
+  const panel = document.getElementById('review-panel-sidebar');
+  updateReviewBadge();
+
+  if (totalDiffCount() === 0) {
+    panel.innerHTML = `<div class="review-empty"><div class="review-empty-icon">📋</div><div style="font-size:0.78rem">No questions assigned yet.<br>Use L1 / L2 / L3 on any question.</div></div>`;
     return;
   }
 
-  // Group flags by main → system → subsec
-  const grouped = {}; // "main / system / subsec" -> [{si, qi, q}]
-  for (const key of Object.keys(flags)) {
-    const [si, qi] = key.split('-').map(Number);
-    const sec = ALL_SUBSECS[si];
-    if (!sec) continue;
-    const groupKey = `${sec.mainKey}|||${sec.systemKey}|||${sec.subsecKey}`;
-    if (!grouped[groupKey]) grouped[groupKey] = { main: sec.mainKey, system: sec.systemKey, subsec: sec.subsecKey, items: [] };
-    grouped[groupKey].items.push({ si, qi, q: sec.questions[qi] });
-  }
+  const LEVELS = [
+    { lvl: 1, label: 'Level 1', sub: 'Review once',  cls: 'l1' },
+    { lvl: 2, label: 'Level 2', sub: 'Review often', cls: 'l2' },
+    { lvl: 3, label: 'Level 3', sub: 'Master later', cls: 'l3' },
+  ];
 
-  let html = `<div class="flagged-toolbar"><div class="flagged-total">${totalFlags} flagged</div><button class="btn-clear-all" onclick="clearAllFlags()">Clear all</button></div>`;
+  let html = '';
 
-  for (const [gk, group] of Object.entries(grouped)) {
-    const isActive = group.items.some(({si,qi}) => si===currentSubsec && qi===currentQ);
+  for (const { lvl, label, sub, cls } of LEVELS) {
+    const items = [];
+    for (const key of Object.keys(flags)) {
+      if (flags[key] !== lvl) continue;
+      const [si, qi] = key.split('-').map(Number);
+      const sec = ALL_SUBSECS[si];
+      if (!sec) continue;
+      items.push({ si, qi, q: sec.questions[qi], sec });
+    }
+    if (!items.length) continue;
+
+    const reviewedCount = items.filter(({si,qi}) => reviewDone[`${lvl}-${si}-${qi}`]).length;
+
+    // Group by subsection
+    const bySubsec = {};
+    for (const item of items) {
+      if (!bySubsec[item.si]) bySubsec[item.si] = { sec: item.sec, si: item.si, items: [] };
+      bySubsec[item.si].items.push(item);
+    }
+
+    const isActiveLevel = reviewMode && reviewLevel === lvl;
+
     html += `
-      <div class="flagged-section-group">
-        <div class="flagged-section-header" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.flagged-section-arrow').classList.toggle('open')">
-          <div class="flagged-section-arrow open">▶</div>
-          <div class="flagged-section-name">${group.subsec}<br><span style="font-size:0.65rem;color:var(--muted);font-weight:400">${group.main} · ${group.system}</span></div>
-          <div class="flagged-section-count">${group.items.length}</div>
+      <div class="review-level-card">
+        <div class="review-level-card-header" onclick="
+          const body = this.nextElementSibling;
+          const chev = this.querySelector('.review-level-chevron');
+          body.classList.toggle('open');
+          chev.classList.toggle('open');
+        ">
+          <div class="review-level-dot ${cls}"></div>
+          <div class="review-level-info">
+            <div class="review-level-title ${cls}">${label} <span style="font-weight:400;font-size:0.7rem;opacity:0.7">— ${sub}</span></div>
+            <div class="review-level-subtitle">${items.length} question${items.length!==1?'s':''}</div>
+          </div>
+          <div class="review-level-chevron open"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6,9 12,15 18,9"/></svg></div>
         </div>
-        <div class="flagged-section-items open">
-          ${group.items.map(({si,qi,q}) => `
-            <div class="flagged-q-item${si===currentSubsec&&qi===currentQ?' active':''}" onclick="jumpToFlagged(${si},${qi})">
-              <span class="flagged-q-id">${q.id}</span>
-              <span class="flagged-q-preview">${q.objective.slice(0,110)}${q.objective.length>110?'…':''}</span>
-            </div>
-          `).join('')}
+        <div class="review-level-body open">
+          <button class="review-start-btn ${cls}" onclick="startReviewMode(${lvl})">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+            Start Level ${lvl} — All sections
+          </button>
+          ${Object.values(bySubsec).map(group => {
+            const isActiveRow = isActiveLevel && group.items.some(({si,qi}) => si===currentSubsec && qi===currentQ);
+            return `<div class="review-subsec-row${isActiveRow?' active':''}" onclick="startReviewMode(${lvl},${group.si})">
+              <div class="review-subsec-row-info">
+                <div class="review-subsec-row-name">${group.sec.subsecKey}</div>
+                <div class="review-subsec-row-meta">${group.sec.mainKey}</div>
+              </div>
+              <div class="review-subsec-row-done ${cls}">${group.items.length}</div>
+            </div>`;
+          }).join('')}
         </div>
       </div>`;
   }
@@ -1613,15 +2007,6 @@ function renderFlaggedSidebar() {
   panel.innerHTML = html;
 }
 
-function updateFlagBadge() {
-  const total = totalFlagCount();
-  const badge = document.getElementById('flag-tab-badge');
-  if (badge) { badge.textContent = total; badge.style.display = total > 0 ? '' : 'none'; }
-  const mbadge = document.getElementById('mobile-flag-badge');
-  if (mbadge) { mbadge.textContent = total; mbadge.style.display = total > 0 ? '' : 'none'; }
-}
-
-// ── FLAG ─────────────────────────────────────────────────────────────────────
 // ── HIGHLIGHTS ────────────────────────────────────────────────────────────────
 
 const HL_COLORS = ['yellow','green','blue','pink'];
@@ -1790,31 +2175,12 @@ function toggleFlag() {
   renderQuestion();
   renderSidebar(document.getElementById('search-input').value);
   updateFlagBadge();
-  if (currentTab === 'flagged') renderFlaggedSidebar();
+  if (currentTab === 'review') renderReviewSidebar();
 }
 
 function jumpToQ(qi) {
   currentQ = qi;
   renderQuestion();
-}
-
-function jumpToFlagged(si, qi) {
-  if (si !== currentSubsec) {
-    currentSubsec = si;
-    switchTab('sections');
-    renderSidebar('');
-    setTimeout(() => {
-      const active = document.querySelector('.subsec-item.active');
-      if (active) active.scrollIntoView({ block: 'nearest' });
-    }, 40);
-  }
-  currentQ = qi;
-  renderQuestion();
-  document.getElementById('sidebar').classList.remove('mobile-open');
-  ['sections','study','flagged'].forEach(t => {
-    const btn = document.getElementById(`mnav-${t}`);
-    if (btn) btn.classList.toggle('active', t === 'study');
-  });
 }
 
 function unflagAllInSubsec() {
@@ -1823,20 +2189,9 @@ function unflagAllInSubsec() {
   saveProgress();
   renderQuestion();
   renderSidebar(document.getElementById('search-input').value);
-  updateFlagBadge();
-  if (currentTab === 'flagged') renderFlaggedSidebar();
-  showToast('All flags cleared for this section.');
-}
-
-function clearAllFlags() {
-  if (!confirm('Clear ALL flagged questions?')) return;
-  flags = {};
-  saveProgress();
-  renderFlaggedSidebar();
-  updateFlagBadge();
-  renderSidebar(document.getElementById('search-input').value);
-  if (currentSubsec !== null) renderQuestion();
-  showToast('All flags cleared.');
+  updateReviewBadge();
+  if (currentTab === 'review') renderReviewSidebar();
+  showToast('All difficulty levels cleared for this section.');
 }
 
 // ── FONT SIZE ─────────────────────────────────────────────────────────────────
@@ -1867,23 +2222,183 @@ function loadFontSize() {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
+// Review mode state: when navigating within a level
+let reviewMode = false;
+let reviewLevel = 0;
+let reviewList = [];         // working queue [{si,qi}]
+let reviewOriginalCount = 0; // size at session start
+let reviewPos = 0;           // current index
+let reviewHistory = [];      // [{si,qi,oldLevel,newLevel}] for undo
+
+function getReviewList(lvl, filterSi) {
+  return Object.keys(flags)
+    .filter(k => {
+      if (flags[k] !== lvl) return false;
+      if (filterSi !== undefined) { const [si] = k.split('-').map(Number); return si === filterSi; }
+      return true;
+    })
+    .map(k => { const [si,qi] = k.split('-').map(Number); return {si,qi}; })
+    .sort((a,b) => a.si !== b.si ? a.si - b.si : a.qi - b.qi);
+}
+
+function startReviewMode(lvl, filterSi) {
+  const list = getReviewList(lvl, filterSi);
+  if (!list.length) { showToast('No questions in this level.'); return; }
+  reviewMode = true;
+  reviewLevel = lvl;
+  reviewList = list.slice(); // working copy
+  reviewOriginalCount = list.length;
+  reviewPos = 0;
+  
+  reviewHistory = [];
+  currentSubsec = list[0].si;
+  currentQ = list[0].qi;
+  renderQuestion();
+  if (currentTab === 'review') renderReviewSidebar();
+  if (isMobile()) {
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    const mhome = document.getElementById('mobile-home-overlay');
+    if (mhome) mhome.classList.add('hidden');
+    mobileTab = 'study';
+    ['home','sections','study'].forEach(t => {
+      const btn = document.getElementById(`mnav-${t}`);
+      if (btn) btn.classList.toggle('active', t === 'study');
+    });
+    const nav = document.querySelector('.mobile-nav');
+    if (nav) nav.style.display = 'none';
+  }
+}
+
+function exitReviewMode(completed) {
+  const finishedLevel = reviewLevel;
+  const finishedCount = reviewList.length;
+  reviewMode = false;
+  reviewList = [];
+  reviewOriginalCount = 0;
+  reviewPos = 0;
+  
+  reviewHistory = [];
+
+  if (completed) {
+    // Clear the main content — blank it out
+    currentSubsec = null;
+    const main = document.getElementById('main-content');
+    if (main) main.innerHTML = `<div class="empty-state"><div class="empty-icon" style="font-size:2rem">✓</div><div style="font-weight:600;font-size:1rem;color:var(--text)">Level ${finishedLevel} review complete!</div><div class="empty-hint">${finishedCount} question${finishedCount!==1?'s':''} reviewed · Select a level to continue</div></div>`;
+
+    // Hide mobile q-bar, show nav
+    const bar = document.getElementById('mobile-q-bar');
+    if (bar) bar.style.display = 'none';
+    const nav = document.querySelector('.mobile-nav');
+    if (nav) nav.style.display = 'flex';
+
+    // Switch to review tab
+    switchTab('review');
+    renderReviewSidebar();
+
+    // Prepend completion banner in sidebar
+    const panel = document.getElementById('review-panel-sidebar');
+    const banner = document.createElement('div');
+    banner.style.cssText = 'padding:0.75rem 0.75rem 0;';
+    banner.innerHTML = `<div style="background:rgba(62,207,142,0.08);border:1px solid rgba(62,207,142,0.25);border-radius:10px;padding:0.85rem 1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.6rem">
+      <span style="font-size:1.1rem">✓</span>
+      <div>
+        <div style="font-size:0.82rem;font-weight:600;color:var(--green)">Level ${finishedLevel} review complete!</div>
+        <div style="font-size:0.7rem;color:var(--muted);margin-top:0.1rem">${finishedCount} question${finishedCount!==1?'s':''} reviewed</div>
+      </div>
+    </div>`;
+    panel.insertBefore(banner, panel.firstChild);
+
+    if (isMobile()) {
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) sidebar.classList.add('mobile-open');
+      mobileTab = 'sections';
+    }
+  } else {
+    // Back button — just re-render normally
+    if (currentSubsec !== null) renderQuestion();
+    else {
+      const main = document.getElementById('main-content');
+      if (main) main.innerHTML = `<div class="empty-state"><div class="empty-icon">📖</div><div class="empty-hint">Select a section to begin</div></div>`;
+    }
+  }
+}
+
+// Pressing a level button immediately assigns and advances
+function reviewAssign(level) {
+  const si = currentSubsec, qi = currentQ;
+  const oldLevel = flags[`${si}-${qi}`] || reviewLevel;
+  // Record for undo
+  reviewHistory.push({ si, qi, oldLevel, newLevel: level });
+  // Assign level (same or different — either way card stays/moves)
+  flags[`${si}-${qi}`] = level;
+  // Mark as reviewed in this session regardless
+  reviewDone[`${reviewLevel}-${si}-${qi}`] = true;
+  saveProgress();
+  updateReviewBadge();
+  reviewPos++;
+  
+  if (reviewPos >= reviewOriginalCount) {
+    exitReviewMode(true);
+    return;
+  }
+  currentSubsec = reviewList[reviewPos].si;
+  currentQ = reviewList[reviewPos].qi;
+  renderQuestion();
+  if (currentTab === 'review') renderReviewSidebar();
+}
+
+// Graduate — remove from all levels, advance
+function graduateQ() {
+  const si = currentSubsec, qi = currentQ;
+  const oldLevel = flags[`${si}-${qi}`] || reviewLevel;
+  reviewHistory.push({ si, qi, oldLevel, newLevel: 0 });
+  delete flags[`${si}-${qi}`];
+  [1,2,3].forEach(lvl => delete reviewDone[`${lvl}-${si}-${qi}`]);
+  saveProgress();
+  updateReviewBadge();
+  reviewPos++;
+  
+  if (reviewPos >= reviewOriginalCount) {
+    exitReviewMode(true);
+    return;
+  }
+  currentSubsec = reviewList[reviewPos].si;
+  currentQ = reviewList[reviewPos].qi;
+  renderQuestion();
+  if (currentTab === 'review') renderReviewSidebar();
+  showToast('Graduated ✓ — removed from review');
+}
+
+// Undo last assignment
+function reviewUndo() {
+  if (!reviewHistory.length) return;
+  const last = reviewHistory.pop();
+  // Restore level (0 = was graduated)
+  if (last.newLevel === 0) {
+    flags[`${last.si}-${last.qi}`] = last.oldLevel;
+  } else {
+    flags[`${last.si}-${last.qi}`] = last.oldLevel;
+  }
+  delete reviewDone[`${reviewLevel}-${last.si}-${last.qi}`];
+  saveProgress();
+  updateReviewBadge();
+  reviewPos = Math.max(0, reviewPos - 1);
+  
+  currentSubsec = reviewList[reviewPos].si;
+  currentQ = reviewList[reviewPos].qi;
+  renderQuestion();
+  if (currentTab === 'review') renderReviewSidebar();
+}
+
 function nextQ() {
   const sec = ALL_SUBSECS[currentSubsec];
   const isLast = currentQ === sec.questions.length - 1;
   const key = `${currentSubsec}-${currentQ}`;
-
-  // Only count as "today" if it wasn't already done
-  if (!done[key]) {
-    incrementTodayCount();
-  }
-
-  // Mark current question done
+  if (!done[key]) incrementTodayCount();
   done[key] = true;
   saveProgress();
   updateGlobalProgress();
-
   if (isLast) {
-    // Last question — stay here, button already shows "✓ Finish", sidebar updates
     renderQuestion();
     renderSidebar(document.getElementById('search-input').value);
   } else {
@@ -1915,12 +2430,11 @@ let ankiConnected = false;
 let helperConnected = false;
 
 async function checkAnki() {
-  // AnkiConnect requires HTTP. When served over HTTPS (e.g. GitHub Pages),
-  // browsers block all http://localhost requests as mixed content — skip entirely.
+  // AnkiConnect requires HTTP. When served over HTTPS, skip and hide the widget entirely.
   if (location.protocol === 'https:') {
     ankiConnected = false;
     helperConnected = false;
-    setAnkiStatus('error', 'Anki: unavailable (HTTPS)');
+    document.getElementById('anki-status').style.display = 'none';
     return;
   }
 
@@ -1942,9 +2456,16 @@ async function checkAnki() {
     helperConnected = !!d.success;
   } catch(e) { helperConnected = false; }
 
-  if (ankiConnected && helperConnected) setAnkiStatus('connected', 'Anki: ready ✓');
-  else if (ankiConnected)               setAnkiStatus('connected', 'Anki: connected');
-  else                                  setAnkiStatus('error',     'Anki: offline');
+  if (ankiConnected && helperConnected) {
+    setAnkiStatus('connected', 'Anki: ready ✓');
+    document.getElementById('anki-status').style.display = '';
+  } else if (ankiConnected) {
+    setAnkiStatus('connected', 'Anki: connected');
+    document.getElementById('anki-status').style.display = '';
+  } else {
+    // Offline — hide the widget
+    document.getElementById('anki-status').style.display = 'none';
+  }
 }
 
 function setAnkiStatus(cls,text) {
@@ -2260,13 +2781,7 @@ function renderHomeStats() {
   // Today's done count (synced via cloud)
   document.getElementById('hs-today').textContent = getTodayCount();
 
-  let totalFlags = 0;
-  ALL_SUBSECS.forEach((s, si) => {
-    s.questions.forEach((_, qi) => {
-      if (flags[`${si}-${qi}`]) totalFlags++;
-    });
-  });
-  document.getElementById('hs-flags').textContent = totalFlags;
+  document.getElementById('hs-flags').textContent = totalDiffCount();
 
   // Notes count
   const notedKeys = new Set([
@@ -2387,6 +2902,11 @@ let mobileTab = 'home';
 function mobileNav(tab) {
   mobileTab = tab;
 
+  // Exit review mode when navigating away
+  if (tab !== 'study') {
+    reviewMode = false; reviewHistory = []; reviewList = [];
+  }
+
   // Update nav button states
   ['home','sections','study','flagged'].forEach(t => {
     const btn = document.getElementById(`mnav-${t}`);
@@ -2414,7 +2934,7 @@ function mobileNav(tab) {
       if (nav) nav.style.display = 'flex';
     } else if (tab === 'flagged') {
       sidebar.classList.add('mobile-open');
-      switchTab('flagged');
+      switchTab('review');
       const bar = document.getElementById('mobile-q-bar');
       if (bar) bar.style.display = 'none';
       const nav = document.querySelector('.mobile-nav');
@@ -2448,10 +2968,8 @@ function renderMobileHome() {
   const todayEl = document.getElementById('mh-today');
   if (todayEl) todayEl.textContent = getTodayCount();
 
-  let totalFlags = 0;
-  ALL_SUBSECS.forEach((s, si) => s.questions.forEach((_, qi) => { if (flags[`${si}-${qi}`]) totalFlags++; }));
   const flagsEl = document.getElementById('mh-flags');
-  if (flagsEl) flagsEl.textContent = totalFlags;
+  if (flagsEl) flagsEl.textContent = totalDiffCount();
 
   const totalNotes = Object.values(notes).filter(n => n && n.trim()).length;
   const notesEl = document.getElementById('mh-notes');
@@ -2532,15 +3050,148 @@ function updateMobileFlagBadge() {
 // When a flagged question is jumped to on mobile, switch to study view
 // (handled inside openSubsec and jumpToFlagged directly via isMobile() checks)
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
-loadProgress();
-loadFontSize();
-updateGlobalProgress();
-updateFlagBadge();
-renderSidebar();
-document.getElementById('sections-panel').style.display = 'flex';
-document.getElementById('flagged-panel-sidebar').style.display = 'none';
+// ── AUTH UI ───────────────────────────────────────────────────────────────────
+function showAuthScreen() {
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+function hideAuthScreen() {
+  document.getElementById('auth-screen').style.display = 'none';
+}
+function showLogin() {
+  document.getElementById('auth-form-login').style.display = '';
+  document.getElementById('auth-form-signup').style.display = 'none';
+  document.getElementById('auth-form-forgot').style.display = 'none';
+  document.getElementById('auth-title').textContent = 'Welcome back';
+  document.getElementById('auth-subtitle').textContent = 'Sign in to continue';
+  clearAuthMessages();
+}
+function showSignup() {
+  document.getElementById('auth-form-login').style.display = 'none';
+  document.getElementById('auth-form-signup').style.display = '';
+  document.getElementById('auth-form-forgot').style.display = 'none';
+  document.getElementById('auth-title').textContent = 'Create account';
+  document.getElementById('auth-subtitle').textContent = 'Start tracking your progress';
+  clearAuthMessages();
+}
+function showForgot() {
+  document.getElementById('auth-form-login').style.display = 'none';
+  document.getElementById('auth-form-signup').style.display = 'none';
+  document.getElementById('auth-form-forgot').style.display = '';
+  document.getElementById('auth-title').textContent = 'Reset password';
+  document.getElementById('auth-subtitle').textContent = "We'll send you a reset link";
+  clearAuthMessages();
+}
+function showLoginScreen() { showAuthScreen(); showLogin(); }
+function setAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg; el.style.display = '';
+  document.getElementById('auth-success').style.display = 'none';
+}
+function setAuthSuccess(msg) {
+  const el = document.getElementById('auth-success');
+  el.textContent = msg; el.style.display = '';
+  document.getElementById('auth-error').style.display = 'none';
+}
+function clearAuthMessages() {
+  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('auth-success').style.display = 'none';
+}
+function setAuthLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  if (btn) btn.disabled = loading;
+}
 
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) { setAuthError('Please enter email and password.'); return; }
+  setAuthLoading('login-btn', true);
+  clearAuthMessages();
+  try {
+    await signIn(email, password);
+    await launchApp();
+  } catch(e) {
+    setAuthError(e.message);
+    setAuthLoading('login-btn', false);
+  }
+}
+
+async function handleSignup() {
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const confirm = document.getElementById('signup-confirm').value;
+  if (!email || !password) { setAuthError('Please fill all fields.'); return; }
+  if (password.length < 6) { setAuthError('Password must be at least 6 characters.'); return; }
+  if (password !== confirm) { setAuthError('Passwords do not match.'); return; }
+  setAuthLoading('signup-btn', true);
+  clearAuthMessages();
+  try {
+    await signUp(email, password);
+    await launchApp();
+  } catch(e) {
+    setAuthError(e.message);
+    setAuthLoading('signup-btn', false);
+  }
+}
+
+async function handleForgot() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { setAuthError('Please enter your email.'); return; }
+  clearAuthMessages();
+  try {
+    await sendPasswordReset(email);
+    setAuthSuccess('Reset link sent! Check your email.');
+  } catch(e) {
+    setAuthError(e.message);
+  }
+}
+
+// Allow Enter key on login/signup forms
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || document.getElementById('auth-screen').style.display === 'none') return;
+  if (document.getElementById('auth-form-login').style.display !== 'none') handleLogin();
+  else if (document.getElementById('auth-form-signup').style.display !== 'none') handleSignup();
+});
+
+async function launchApp() {
+  hideAuthScreen();
+  // Show logout button with email
+  const logoutBtn = document.getElementById('logout-btn');
+  const logoutEmail = document.getElementById('logout-email');
+  if (logoutBtn) { logoutBtn.style.display = ''; }
+  if (logoutEmail && authSession?.user?.email) logoutEmail.textContent = authSession.user.email;
+
+  // Load local data first for instant render
+  loadProgress();
+  migrateFlagsToLevels();
+  loadFontSize();
+  updateGlobalProgress();
+  updateReviewBadge();
+  renderSidebar();
+  document.getElementById('sections-panel').style.display = 'flex';
+  document.getElementById('review-panel-sidebar').style.display = 'none';
+
+  if (isMobile()) {
+    initMobileHome();
+  } else {
+    renderHomeStats();
+    document.body.classList.add('home-open');
+  }
+
+  checkAnki();
+  if (location.protocol !== 'https:') setInterval(checkAnki, 15000);
+
+  // Then load from cloud (overwrites with latest)
+  await loadFromCloud();
+  updateGlobalProgress();
+  updateFlagBadge();
+  renderSidebar();
+  if (!isMobile()) renderHomeStats();
+  if (isMobile() && mobileTab === 'home') renderMobileHome();
+  if (currentSubsec !== null) renderQuestion();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
 function initMobileHome() {
   mobileTab = 'home';
   renderMobileHome();
@@ -2554,29 +3205,24 @@ function initMobileHome() {
   });
 }
 
-if (isMobile()) {
-  initMobileHome();
-} else {
-  renderHomeStats();
-  document.body.classList.add('home-open');
-}
-
-// Also run after full page load to catch cases where isMobile() was wrong
 window.addEventListener('load', () => {
   if (isMobile()) initMobileHome();
 });
 
-checkAnki();
-if (location.protocol !== 'https:') setInterval(checkAnki, 15000);
-
-loadFromCloud().then(() => {
-  updateGlobalProgress();
-  updateFlagBadge();
-  renderSidebar();
-  if (!isMobile()) renderHomeStats();
-  if (isMobile() && mobileTab === 'home') renderMobileHome();
-  if (currentSubsec !== null) renderQuestion();
-});
+// Check for existing session or show login
+(async () => {
+  const hasSession = loadSession();
+  if (hasSession && authSession?.refresh_token) {
+    // Try to refresh the token silently
+    const ok = await refreshSession();
+    if (ok) {
+      await launchApp();
+      return;
+    }
+  }
+  // No valid session — show login
+  showAuthScreen();
+})();
 </script>
 </body>
 </html>
