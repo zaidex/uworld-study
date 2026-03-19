@@ -2949,7 +2949,7 @@ function parseAnkiCards(text) {
   let tagsColIdx = -1; // -1 = use last column
   for (const line of lines) {
     if (!line || line.startsWith('#')) continue;
-    const cols = splitTSVLine(line);
+    const cols = line.split('\t');
     if (cols.length < 2) continue;
     // Exact field positions from AnKingOverhaul:
     // 0=Text, 1=Extra, 2=Lecture Notes, 15=Additional Resources, 18=Tags
