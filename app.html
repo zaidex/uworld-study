@@ -2963,9 +2963,10 @@ function parseAnkiCards(text) {
     const lectureField  = fixImageSrcs(cols[2]  || '');
     const sketchyField  = fixImageSrcs(cols[7]  || '');
     const resourceField = fixImageSrcs(cols[15] || '');
-    const tagsCol       = cols[tagsColIdx] || cols[cols.length - 1] || '';
-    // Match tag:*UWorld*:: — any tag containing UWorld followed by ::levels::ID
-    const idMatches = tagsCol.match(/\S*UWorld\S*::(\d+)(?=\s|$)/g) || [];
+    // Search ALL columns for UWorld tags — handles any column layout
+    const allCols = cols.join(' ');
+    // Match #UWorld followed by any number of ::word:: segments then ::ID
+    const idMatches = allCols.match(/#UWorld(?:::[^:\s\d][^:\s]*)*::(\d+)/g) || [];
     const ids = [...new Set(idMatches.map(m => m.match(/::(\d+)$/)[1]))];
     if (!ids.length) continue;
     const card = { text: textField, extra: extraField, lectureNotes: lectureField, sketchy: sketchyField, additionalResources: resourceField };
