@@ -1652,6 +1652,7 @@ async function syncToCloud() {
       done, flags, notes, images,
       daily_counts: getDailyCounts(),
       highlights,
+      font_size: fontSizeIdx,
       updated_at: new Date().toISOString()
     };
     const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?auth_user_id=eq.${uid}`, {
@@ -1673,7 +1674,7 @@ async function loadFromCloud() {
   try {
     const uid = getUserId();
     console.log('loadFromCloud: fetching for uid', uid);
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?auth_user_id=eq.${uid}&select=done,flags,notes,images,daily_counts,highlights&order=updated_at.desc&limit=1`, { headers: getHeaders() });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?auth_user_id=eq.${uid}&select=done,flags,notes,images,daily_counts,highlights,font_size&order=updated_at.desc&limit=1`, { headers: getHeaders() });
     console.log('loadFromCloud: status', res.status);
     const text = await res.text();
     console.log('loadFromCloud: response', text.slice(0, 300));
@@ -1686,6 +1687,11 @@ async function loadFromCloud() {
       notes  = rows[0].notes  || {};
       images = rows[0].images || {};
       if (rows[0].highlights) highlights = rows[0].highlights;
+      if (rows[0].font_size !== undefined && rows[0].font_size !== null) {
+        fontSizeIdx = rows[0].font_size;
+        applyFontSize();
+        try { localStorage.setItem('uworld_font_size', fontSizeIdx); } catch(e) {}
+      }
       if (rows[0].daily_counts) {
         const cloudCounts = rows[0].daily_counts;
         const localCounts = getDailyCounts();
@@ -2516,6 +2522,9 @@ function changeFontSize(dir) {
   fontSizeIdx = Math.max(0, Math.min(FONT_SIZES.length - 1, fontSizeIdx + dir));
   applyFontSize();
   try { localStorage.setItem('uworld_font_size', fontSizeIdx); } catch(e){}
+  // Sync font size to cloud immediately
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncToCloud, 1500);
 }
 
 function applyFontSize() {
