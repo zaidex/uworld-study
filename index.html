@@ -23,6 +23,8 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+body.auth-open { overflow: hidden; height: 100vh; position: fixed; width: 100%; }
+body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%; }
 
 /* HEADER */
 .header {
@@ -1096,6 +1098,28 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 #auth-screen {
   position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
   z-index: 9999; padding: 1.5rem; overflow: hidden; background: #0d0f14;
+  touch-action: none;
+}
+.auth-card {
+  overflow: visible;
+}
+@media (max-width: 680px) {
+  #auth-screen {
+    padding: 1.25rem;
+    align-items: center;
+    overflow: hidden;
+  }
+  .auth-card {
+    padding: 1.75rem 1.4rem;
+    max-height: none;
+    overflow: visible;
+    border-radius: 18px;
+    width: 100%;
+    max-width: 360px;
+  }
+  .auth-logo-text { font-size: 2.2rem; }
+  .auth-logo { margin-bottom: 1.2rem; }
+  .auth-title { margin-bottom: 1rem; }
 }
 .auth-bg-grid {
   position: absolute; inset: 0; pointer-events: none;
@@ -3543,9 +3567,17 @@ function homeGoToReview(lvl) {
   }
 }
 
+let _savedScrollY = 0;
+
 function showHome() {
   if (window.innerWidth <= 680) return;
   renderHomeStats();
+  // Save current scroll position and lock body
+  _savedScrollY = window.scrollY;
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${_savedScrollY}px`;
+  document.body.style.width = '100%';
   document.getElementById('home-overlay').classList.add('visible');
   document.body.classList.add('home-open');
 }
@@ -3553,6 +3585,12 @@ function showHome() {
 function hideHome() {
   document.getElementById('home-overlay').classList.remove('visible');
   document.body.classList.remove('home-open');
+  // Restore body scroll exactly where it was
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.width = '';
+  window.scrollTo(0, _savedScrollY);
 }
 
 // ── KEYBOARD ──────────────────────────────────────────────────────────────────
@@ -3779,9 +3817,13 @@ function updateMobileFlagBadge() {
 // ── AUTH UI ───────────────────────────────────────────────────────────────────
 function showAuthScreen() {
   document.getElementById('auth-screen').style.display = 'flex';
+  document.body.classList.add('auth-visible');
+  document.body.classList.add('auth-open');
 }
 function hideAuthScreen() {
   document.getElementById('auth-screen').style.display = 'none';
+  document.body.classList.remove('auth-visible');
+  document.body.classList.remove('auth-open');
 }
 function showLogin() {
   document.getElementById('auth-form-login').style.display = '';
@@ -3926,8 +3968,7 @@ async function launchApp() {
   if (isMobile()) {
     initMobileHome();
   } else {
-    renderHomeStats();
-    document.body.classList.add('home-open');
+    showHome();
   }
 
   checkAnki();
