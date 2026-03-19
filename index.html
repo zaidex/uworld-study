@@ -47,25 +47,30 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 
 /* LAYOUT */
 .layout { display: grid; grid-template-columns: 310px 1fr; min-height: calc(100vh - 53px); }
-.layout.anki-panel-open { grid-template-columns: 310px 1fr 380px; }
 
-/* ANKI PANEL */
-.anki-panel {
-  display: none; flex-direction: column;
-  background: var(--surface); border-left: 1px solid var(--border);
-  position: sticky; top: 53px; height: calc(100vh - 53px);
-  overflow: hidden;
+/* ANKI PANEL - normal inline box, not sidebar */
+.anki-panel { display: none; }
+.anki-panel-wrap {
+  padding: 0 2.5rem 2rem;
+  max-width: 820px;
 }
-.layout.anki-panel-open .anki-panel { display: flex; }
+.anki-panel-box {
+  background: var(--surface2);
+  border: 1px solid rgba(62,207,142,0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
 .anki-panel-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--border);
-  flex-shrink: 0; background: var(--surface);
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
 }
 .anki-panel-title {
-  font-size: 0.75rem; font-weight: 600; color: var(--text);
+  font-size: 0.72rem; font-weight: 600; color: #3ecf8e;
   display: flex; align-items: center; gap: 0.4rem;
-  font-family: 'IBM Plex Sans', sans-serif;
+  font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.05em;
 }
 .anki-panel-status { font-size: 0.65rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); }
 .anki-panel-toggle {
@@ -73,8 +78,8 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
   font-size: 0.75rem; padding: 0.2rem 0.4rem; border-radius: 4px; transition: all 0.15s;
 }
 .anki-panel-toggle:hover { color: var(--text); background: var(--surface2); }
-.anki-panel-body { flex: 1; overflow-y: auto; padding: 0.75rem; }
-.anki-panel-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-size: 0.78rem; text-align: center; padding: 2rem; }
+.anki-panel-body { padding: 0.75rem; }
+.anki-panel-empty { color: var(--muted); font-size: 0.78rem; text-align: center; padding: 1.5rem; }
 
 /* Anki card display */
 .anki-card-item {
@@ -101,6 +106,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 }
 .anki-field-label.extra { color: #3ecf8e; }
 .anki-field-label.lecture { color: #f59e0b; }
+.anki-field-label.sketchy { color: #e879f9; }
 .anki-field-label.resources { color: #a78bfa; }
 .anki-field-chevron { font-size: 0.6rem; color: var(--muted); transition: transform 0.2s; }
 .anki-field-chevron.open { transform: rotate(180deg); }
@@ -557,8 +563,8 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 /* ── MOBILE ─────────────────────────────────────────────────────────────────── */
 @media (max-width: 680px) {
   .anki-panel { display: none !important; }
-  .btn-anki-panel { display: none !important; }
   .layout.anki-panel-open { grid-template-columns: 310px 1fr !important; }
+  #desktop-anki-wrap { display: none !important; }
 
   /* ─── HEADER ─── */
   .sidebar-toggle-btn { display: none !important; }
@@ -1290,25 +1296,6 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
       </div>
       <div style="font-size:1rem">Select a section to begin studying</div>
       <div class="empty-hint">4,025 questions · Medicine, Surgery, Peds, OB/GYN, Psych, Biostats, Social Sciences</div>
-    </div>
-  </div>
-  <!-- Anki Cards Panel -->
-  <div class="anki-panel" id="anki-panel">
-    <div class="anki-panel-header">
-      <div class="anki-panel-title">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-        Anki Cards
-      </div>
-      <div style="display:flex;align-items:center;gap:0.5rem">
-        <span class="anki-panel-status" id="anki-panel-status"></span>
-        <button class="anki-panel-toggle" id="anki-panel-toggle" onclick="toggleAnkiPanel()" title="Hide panel">✕</button>
-      </div>
-    </div>
-    <div class="anki-panel-body" id="anki-panel-body">
-      <div class="anki-panel-empty" id="anki-panel-empty">
-        <div style="font-size:1.5rem;margin-bottom:0.5rem;opacity:0.3">📚</div>
-        <div>Select a question to see its Anki cards</div>
-      </div>
     </div>
   </div>
 </div>
@@ -2074,6 +2061,23 @@ function renderQuestion() {
       </div>
       <div id="mobile-anki-body" style="display:none"></div>
     </div>
+
+    <!-- Desktop inline Anki panel box -->
+    <div id="desktop-anki-wrap" style="display:none;margin-top:1rem;">
+      <div class="anki-panel-box">
+        <div class="anki-panel-header">
+          <div class="anki-panel-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            ANKI CARDS
+          </div>
+          <div style="display:flex;align-items:center;gap:0.6rem">
+            <span class="anki-panel-status" id="anki-panel-status"></span>
+            <button class="anki-panel-toggle" onclick="hideDesktopAnkiPanel()">✕</button>
+          </div>
+        </div>
+        <div class="anki-panel-body" id="anki-panel-body"></div>
+      </div>
+    </div>
   </div>`;
 
   main.innerHTML = html;
@@ -2083,7 +2087,12 @@ function renderQuestion() {
 
   // If Anki panel is open, refresh it for the new question
   if (ankiPanelVisible && ankiDataLoaded) {
+    const wrap = document.getElementById('desktop-anki-wrap');
+    if (wrap) wrap.style.display = 'block';
     renderAnkiPanel(q.id);
+  } else if (!ankiPanelVisible) {
+    const wrap = document.getElementById('desktop-anki-wrap');
+    if (wrap) wrap.style.display = 'none';
   }
   const bar = document.getElementById('mobile-q-bar');
   const mprev = document.getElementById('mobile-q-prev');
@@ -2849,53 +2858,75 @@ async function openInAnki(id) {
 
 // ── ANKI CARDS PANEL ──────────────────────────────────────────────────────────
 const ANKI_CARDS_URL = 'https://zaidex.github.io/uworld-study/anki_cards.txt';
-let ankiCardIndex = null;   // Map: questionId → [{text, extra, lectureNotes, additionalResources}]
+// Images in the deck reference filenames like src="image.jpg" — they live in the same folder
+const ANKI_IMG_BASE = 'https://pub-0d1ce88c6e454edfbbb33e3540648a1c.r2.dev/';
+let ankiCardIndex = null;
 let ankiDataLoading = false;
 let ankiDataLoaded = false;
 let ankiPanelVisible = false;
 
-function toggleAnkiPanel() {
-  ankiPanelVisible = !ankiPanelVisible;
-  document.getElementById('main-layout').classList.toggle('anki-panel-open', ankiPanelVisible);
+function hideDesktopAnkiPanel() {
+  ankiPanelVisible = false;
+  const wrap = document.getElementById('desktop-anki-wrap');
+  if (wrap) wrap.style.display = 'none';
 }
+
+function toggleAnkiPanel() { hideDesktopAnkiPanel(); }
 
 async function loadAnkiData() {
   if (ankiDataLoaded || ankiDataLoading) return;
   ankiDataLoading = true;
-  document.getElementById('anki-panel-status').textContent = 'Loading…';
+  const statusEl = document.getElementById('anki-panel-status');
+  if (statusEl) statusEl.textContent = 'Loading…';
   try {
     const res = await fetch(ANKI_CARDS_URL);
-    if (!res.ok) throw new Error('Could not load anki_cards.txt');
+    if (!res.ok) throw new Error('Could not load anki_cards.txt — check it is in your GitHub repo');
     const text = await res.text();
     parseAnkiCards(text);
     ankiDataLoaded = true;
-    document.getElementById('anki-panel-status').textContent = `${Object.keys(ankiCardIndex).length} IDs`;
+    if (statusEl) statusEl.textContent = `${Object.keys(ankiCardIndex).length} IDs indexed`;
   } catch(e) {
-    document.getElementById('anki-panel-status').textContent = 'Load failed';
-    showToast('Could not load Anki cards file: ' + e.message);
+    if (statusEl) statusEl.textContent = 'Load failed';
+    showToast('Could not load Anki cards: ' + e.message);
   } finally {
     ankiDataLoading = false;
   }
 }
 
+function fixImageSrcs(html) {
+  if (!html) return '';
+  // Fix relative image src to use GitHub Pages base URL
+  return html.replace(/src="(?!https?:\/\/|data:)([^"]+)"/g, (match, filename) => {
+    return `src="${ANKI_IMG_BASE}${filename}" onerror="this.style.display='none';this.nextSibling&&this.nextSibling.remove()"`;
+  });
+}
+
 function parseAnkiCards(text) {
   ankiCardIndex = {};
   const lines = text.split('\n');
+  let tagsColIdx = 18; // column 19 = index 18
+  for (const line of lines) {
+    if (line.startsWith('#tags column:')) {
+      tagsColIdx = parseInt(line.split(':')[1].trim()) - 1;
+    }
+    if (!line.startsWith('#')) break;
+  }
   for (const line of lines) {
     if (!line || line.startsWith('#')) continue;
     const cols = splitTSVLine(line);
-    if (cols.length < 4) continue;
-    const textField     = cols[0] || '';
-    const extraField    = cols[1] || '';
-    const lectureField  = cols[2] || '';
-    const resourceField = cols[3] || '';
-    // Tags are in the last column that contains UWorld IDs
-    const tagsCol = cols[cols.length - 1] || '';
-    // Extract all UWorld IDs from tags
-    const idMatches = tagsCol.match(/#AK_Step\w+::#UWorld::\w+::(\d+)/g) || [];
-    const ids = idMatches.map(m => m.match(/::(\d+)$/)[1]);
+    if (cols.length < 2) continue;
+    // Exact field positions from AnKingOverhaul:
+    // 0=Text, 1=Extra, 2=Lecture Notes, 15=Additional Resources, 18=Tags
+    const textField     = fixImageSrcs(cols[0]  || '');
+    const extraField    = fixImageSrcs(cols[1]  || '');
+    const lectureField  = fixImageSrcs(cols[2]  || '');
+    const sketchyField  = fixImageSrcs(cols[7]  || '');
+    const resourceField = fixImageSrcs(cols[15] || '');
+    const tagsCol       = cols[tagsColIdx] || cols[cols.length - 1] || '';
+    const idMatches = tagsCol.match(/::#UWorld::\w+::(\d+)/g) || [];
+    const ids = [...new Set(idMatches.map(m => m.match(/::(\d+)$/)[1]))];
     if (!ids.length) continue;
-    const card = { text: textField, extra: extraField, lectureNotes: lectureField, additionalResources: resourceField };
+    const card = { text: textField, extra: extraField, lectureNotes: lectureField, sketchy: sketchyField, additionalResources: resourceField };
     for (const id of ids) {
       if (!ankiCardIndex[id]) ankiCardIndex[id] = [];
       ankiCardIndex[id].push(card);
@@ -2924,16 +2955,9 @@ function splitTSVLine(line) {
 }
 
 async function loadAnkiCards(questionId) {
-  // Show panel if hidden
-  if (!ankiPanelVisible) {
-    ankiPanelVisible = true;
-    document.getElementById('main-layout').classList.add('anki-panel-open');
-  }
-
   const btn = document.getElementById('btn-show-anki');
-  if (btn) { btn.classList.add('loading'); btn.textContent = 'Loading…'; }
+  if (btn) { btn.classList.add('loading'); btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Loading…`; }
 
-  // Load data if not yet loaded
   if (!ankiDataLoaded) await loadAnkiData();
 
   if (btn) {
@@ -2941,6 +2965,9 @@ async function loadAnkiCards(questionId) {
     btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Cards`;
   }
 
+  ankiPanelVisible = true;
+  const wrap = document.getElementById('desktop-anki-wrap');
+  if (wrap) wrap.style.display = 'block';
   renderAnkiPanel(questionId);
 }
 
@@ -2964,6 +2991,7 @@ function renderAnkiPanel(questionId) {
     { key: 'text',                label: 'Text',                 cls: ''         },
     { key: 'extra',               label: 'Extra',                cls: 'extra'    },
     { key: 'lectureNotes',        label: 'Lecture Notes',        cls: 'lecture'  },
+    { key: 'sketchy',             label: 'Sketchy',              cls: 'sketchy'  },
     { key: 'additionalResources', label: 'Additional Resources', cls: 'resources'},
   ];
 
@@ -3018,6 +3046,7 @@ async function toggleMobileAnkiPanel(questionId) {
     { key: 'text',                label: 'Text',                 cls: ''          },
     { key: 'extra',               label: 'Extra',                cls: 'extra'     },
     { key: 'lectureNotes',        label: 'Lecture Notes',        cls: 'lecture'   },
+    { key: 'sketchy',             label: 'Sketchy',              cls: 'sketchy'   },
     { key: 'additionalResources', label: 'Additional Resources', cls: 'resources' },
   ];
 
