@@ -1464,7 +1464,7 @@ function getHeaders(useAuth = true) {
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 const AUTH_SESSION_KEY = 'uworld_auth_session';
 const COOKIE_NAME = 'zworld_token';
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
 
 function setAuthCookie(token) {
   document.cookie = `${COOKIE_NAME}=${token}; Max-Age=${COOKIE_MAX_AGE}; Path=/; SameSite=Strict; Secure`;
@@ -1476,7 +1476,6 @@ function clearAuthCookie() {
 function saveSession(session) {
   authSession = session;
   try { localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session)); } catch(e) {}
-  // Keep cookie in sync so the Worker stays happy
   if (session?.access_token) setAuthCookie(session.access_token);
 }
 
@@ -1556,8 +1555,8 @@ async function signUp(email, password) {
     throw new Error('Network error — check your internet connection.');
   }
   if (!res.ok) throw new Error(data.error_description || data.message || data.msg || JSON.stringify(data));
-  // Return any auto-created token so caller can invalidate it — never save it here
-  return data.access_token || null;
+  // Never auto-login — always return to login page after signup
+  return 'success';
 }
 
 async function signOut() {
@@ -1568,7 +1567,7 @@ async function signOut() {
     });
   } catch(e) {}
   clearSession();
-  window.location.href = '/login.html';
+  window.location.href = '/index.html';
 }
 
 async function sendPasswordReset(email) {
@@ -3776,14 +3775,10 @@ function updateMobileFlagBadge() {
 
 // ── AUTH UI ───────────────────────────────────────────────────────────────────
 function showAuthScreen() {
-  document.getElementById('auth-screen').style.display = 'flex';
-  document.body.classList.add('auth-visible');
-  document.body.classList.add('auth-open');
+  // auth now handled by login.html
 }
 function hideAuthScreen() {
-  document.getElementById('auth-screen').style.display = 'none';
-  document.body.classList.remove('auth-visible');
-  document.body.classList.remove('auth-open');
+  // auth now handled by login.html
 }
 function showLogin() {
   document.getElementById('auth-form-login').style.display = '';
@@ -3880,19 +3875,7 @@ async function handleSignup() {
   setAuthLoading('signup-btn', true);
   clearAuthMessages();
   try {
-    const newToken = await signUp(email, password);
-    // If Supabase auto-created a session, invalidate it server-side (best-effort, isolated)
-    if (newToken) {
-      try {
-        await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + newToken }
-        });
-      } catch(_) {}
-    }
-    // Ensure no session bleeds into the current browser state
-    authSession = null;
-    clearSession();
+    await signUp(email, password);
     // Go back to login and show success message
     showLogin();
     setAuthSuccess('Account created successfully! You can now sign in once approved.');
@@ -3914,12 +3897,7 @@ async function handleForgot() {
   }
 }
 
-// Allow Enter key on login/signup forms
-document.addEventListener('keydown', e => {
-  if (e.key !== 'Enter' || document.getElementById('auth-screen').style.display === 'none') return;
-  if (document.getElementById('auth-form-login').style.display !== 'none') handleLogin();
-  else if (document.getElementById('auth-form-signup').style.display !== 'none') handleSignup();
-});
+// Enter key for auth forms handled in login.html
 
 async function launchApp() {
   hideAuthScreen();
@@ -3988,15 +3966,13 @@ window.addEventListener('load', () => {
   if (hasSession && authSession?.refresh_token) {
     const ok = await refreshSession();
     if (ok) {
-      // Keep cookie fresh after token refresh
       if (authSession?.access_token) setAuthCookie(authSession.access_token);
       await launchApp();
       return;
     }
   }
-  // No valid session — go to login page
   clearAuthCookie();
-  window.location.href = '/login.html';
+  window.location.href = '/index.html';
 })();
 </script>
 </body>
