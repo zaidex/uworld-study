@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ZWorld</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230d0f14'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%234f9cf9' stroke-width='1.5' stroke-dasharray='4 6' opacity='0.5'/%3E%3Crect x='20' y='21' width='24' height='5' rx='1.5' fill='%23e2e8f0'/%3E%3Cpolygon points='44,26 20,42 20,37 44,21' fill='%234f9cf9'/%3E%3Crect x='20' y='38' width='24' height='5' rx='1.5' fill='%233ecf8e'/%3E%3C/svg%3E">
 <style>
@@ -1198,7 +1198,7 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
   display:block; width:100%; box-sizing:border-box;
   padding:0.72rem 0.9rem; margin-bottom:0.75rem;
   background:rgba(28,32,48,0.8); border:1px solid #252a3a; border-radius:8px;
-  color:#e2e8f0; font-size:0.9rem; font-family:'IBM Plex Sans',sans-serif;
+  color:#e2e8f0; font-size:1rem; font-family:'IBM Plex Sans',sans-serif;
   outline:none; transition:border-color 0.2s, box-shadow 0.2s;
   animation:authFadeUp 0.6s ease 0.5s both;
 }
@@ -1551,6 +1551,22 @@ async function refreshSession() {
 }
 
 async function signIn(email, password) {
+  // ── WHITELIST CHECK ───────────────────────────────────────────────────────
+  // User must be in the allowed_emails table to log in
+  let wlRes, wlData;
+  try {
+    wlRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/allowed_emails?select=email&email=eq.${encodeURIComponent(email.toLowerCase())}`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' } }
+    );
+    wlData = await wlRes.json();
+  } catch(e) {
+    throw new Error('Network error — could not verify access.');
+  }
+  if (!Array.isArray(wlData) || wlData.length === 0) {
+    throw new Error('Your account has not been approved yet. Please contact the administrator.');
+  }
+  // ── PROCEED WITH LOGIN ────────────────────────────────────────────────────
   let res, data;
   try {
     res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
@@ -1567,6 +1583,22 @@ async function signIn(email, password) {
 }
 
 async function signUp(email, password) {
+  // ── WHITELIST CHECK ───────────────────────────────────────────────────────
+  // Only emails you've added to the allowed_emails table in Supabase can register
+  let wlRes, wlData;
+  try {
+    wlRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/allowed_emails?select=email&email=eq.${encodeURIComponent(email.toLowerCase())}`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' } }
+    );
+    wlData = await wlRes.json();
+  } catch(e) {
+    throw new Error('Network error — could not verify registration eligibility.');
+  }
+  if (!Array.isArray(wlData) || wlData.length === 0) {
+    throw new Error('This email is not approved for registration. Please contact the administrator.');
+  }
+  // ── PROCEED WITH SIGNUP ───────────────────────────────────────────────────
   let res, data;
   try {
     res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
