@@ -1375,10 +1375,6 @@ async function sendPasswordReset(email) {
   if (!res.ok) { const d = await res.json(); throw new Error(d.error_description || 'Failed'); }
 }
 
-function getUserId() {
-  return authSession?.user?.id || 'anonymous';
-}
-
 // ── PROGRESS ─────────────────────────────────────────────────────────────────
 const STORAGE_KEY  = 'uworld_v4_done';
 const FLAGS_KEY    = 'uworld_v4_flags';
@@ -1386,6 +1382,7 @@ const NOTES_KEY    = 'uworld_v4_notes';
 const IMAGES_KEY   = 'uworld_v4_images';
 const HIGHLIGHTS_KEY = 'uworld_v4_highlights';
 const REVIEW_DONE_KEY = 'uworld_v4_reviewdone';
+const LAST_SESSION_KEY = 'uworld_v4_lastsession';
 const USER_ID_KEY  = 'uworld_user_id';
 
 let done  = {};
@@ -1393,16 +1390,19 @@ let flags = {};
 let notes = {};
 let images = {};
 let highlights = {};
-let reviewDone = {}; // key: "lvl-si-qi" → true (visited during review)
+let reviewDone = {};
 let syncTimer = null;
 let isSyncing = false;
 
-// Get or create a stable user ID for this device
-// Also checks URL hash for ?sync=ID to auto-pair devices
+function saveLastSession(type, si, lvl) {
+  try { localStorage.setItem(LAST_SESSION_KEY, JSON.stringify({ type, si, lvl: lvl||null, ts: Date.now() })); } catch(e) {}
+}
+function loadLastSession() {
+  try { const r = localStorage.getItem(LAST_SESSION_KEY); return r ? JSON.parse(r) : null; } catch(e) { return null; }
+}
+
 function getUserId() {
-  // Always use the real auth UUID when logged in
   if (authSession?.user?.id) return authSession.user.id;
-  // Fallback for legacy (should not happen after login)
   let uid = localStorage.getItem(USER_ID_KEY);
   if (!uid) { uid = 'user_' + Math.random().toString(36).slice(2) + Date.now().toString(36); localStorage.setItem(USER_ID_KEY, uid); }
   return uid;
@@ -1671,8 +1671,9 @@ function filterSidebar(val) { renderSidebar(val); }
 
 // ── OPEN SUBSECTION ──────────────────────────────────────────────────────────
 function openSubsec(si) {
-  reviewMode = false; reviewHistory = []; reviewList = []; // exit review mode when opening a section normally
+  reviewMode = false; reviewHistory = []; reviewList = [];
   currentSubsec = si;
+  saveLastSession('study', si);
   const sec = ALL_SUBSECS[si];
   let startQ = 0;
   for (let i = 0; i < sec.questions.length; i++) {
@@ -2246,8 +2247,8 @@ function startReviewMode(lvl, filterSi) {
   reviewHistory = [];
   currentSubsec = list[0].si;
   currentQ = list[0].qi;
+  saveLastSession('review', null, lvl);
   renderQuestion();
-  if (currentTab === 'review') renderReviewSidebar();
   if (isMobile()) {
     document.getElementById('sidebar').classList.remove('mobile-open');
     const mhome = document.getElementById('mobile-home-overlay');
@@ -2831,7 +2832,11 @@ function renderHomeStats() {
     });
   });
 
-  // Continue list — find in-progress subsections
+  // Continue list
+  const lastSession = loadLastSession();
+  const contList = document.getElementById('home-continue-list');
+
+  // Build continue items — last session first, then in-progress sections
   const inProgress = ALL_SUBSECS.map((s, si) => {
     const tot2 = s.questions.length;
     const dn2 = doneCountForSubsec(si);
@@ -2840,8 +2845,32 @@ function renderHomeStats() {
     .sort((a,b) => b.pct - a.pct)
     .slice(0, 4);
 
-  const contList = document.getElementById('home-continue-list');
-  if (inProgress.length === 0) {
+  if (lastSession?.type === 'review') {
+    const lvl = lastSession.lvl;
+    const LEVEL_LABELS = ['','Review once','Review often','Master later'];
+    const LEVEL_COLORS = ['','#60a5fa','#fb923c','#a78bfa'];
+    const count = Object.values(flags).filter(v => v === lvl).length;
+    const resumeItem = `<div class="continue-item" onclick="homeGoToReview(${lvl})" style="--mc:${LEVEL_COLORS[lvl]}">
+      <div class="continue-dot" style="background:${LEVEL_COLORS[lvl]}"></div>
+      <div class="continue-info">
+        <div class="continue-name">Level ${lvl} Review</div>
+        <div class="continue-sub">${LEVEL_LABELS[lvl]} · ${count} questions</div>
+      </div>
+      <div class="continue-arrow">›</div>
+    </div>`;
+    const studyItems = inProgress.map(({ si, s, tot, dn, pct: p2 }) => {
+      const { mc } = getMajorColor(s.mainKey);
+      return `<div class="continue-item" onclick="homeGoTo(${si})" style="--mc:${mc}">
+        <div class="continue-dot" style="background:${mc}"></div>
+        <div class="continue-info">
+          <div class="continue-name">${s.subsecKey}</div>
+          <div class="continue-sub">${s.mainKey} · ${dn}/${tot} · ${p2}%</div>
+        </div>
+        <div class="continue-arrow">›</div>
+      </div>`;
+    }).join('');
+    contList.innerHTML = resumeItem + studyItems || '<div style="font-size:0.78rem;color:var(--muted);text-align:center;padding:1rem 0">No in-progress sections yet</div>';
+  } else if (inProgress.length === 0) {
     contList.innerHTML = '<div style="font-size:0.78rem;color:var(--muted);text-align:center;padding:1rem 0">No in-progress sections yet</div>';
   } else {
     contList.innerHTML = inProgress.map(({ si, s, tot, dn, pct: p2 }) => {
@@ -2861,6 +2890,12 @@ function renderHomeStats() {
 function homeGoTo(si) {
   hideHome();
   openSubsec(si);
+}
+
+function homeGoToReview(lvl) {
+  hideHome();
+  switchTab('review');
+  startReviewMode(lvl);
 }
 
 function showHome() {
@@ -3008,17 +3043,39 @@ function renderMobileHome() {
   // Continue list
   const contList = document.getElementById('mh-continue-list');
   if (contList) {
-    const inProgress = [];
+    const lastSess = loadLastSession();
+    const LEVEL_COLORS_M = ['','#60a5fa','#fb923c','#a78bfa'];
+    const LEVEL_LABELS_M = ['','Review once','Review often','Master later'];
+
+    const inProgressM = [];
     ALL_SUBSECS.forEach((s, si) => {
       const total = s.questions.length;
       const doneC = s.questions.filter((_, qi) => done[`${si}-${qi}`]).length;
-      if (doneC > 0 && doneC < total) inProgress.push({ si, s, doneC, total });
+      if (doneC > 0 && doneC < total) inProgressM.push({ si, s, doneC, total });
     });
-    inProgress.sort((a, b) => b.doneC - a.doneC);
-    if (inProgress.length === 0) {
+    inProgressM.sort((a, b) => b.doneC - a.doneC);
+
+    let html = '';
+
+    // Show last review session at top if applicable
+    if (lastSess?.type === 'review') {
+      const lvl = lastSess.lvl;
+      const count = Object.values(flags).filter(v => v === lvl).length;
+      const mc = LEVEL_COLORS_M[lvl];
+      html += `<div class="mh-continue-item" onclick="mobileGoToReview(${lvl})" style="--mc:${mc}">
+        <div class="mh-continue-dot" style="background:${mc}"></div>
+        <div class="mh-continue-info">
+          <div class="mh-continue-name">Level ${lvl} Review</div>
+          <div class="mh-continue-sub">${LEVEL_LABELS_M[lvl]} · ${count} questions</div>
+        </div>
+        <div class="mh-continue-arrow">›</div>
+      </div>`;
+    }
+
+    if (inProgressM.length === 0 && !html) {
       contList.innerHTML = '<div class="mh-no-activity">No recent activity yet</div>';
     } else {
-      contList.innerHTML = inProgress.slice(0, 4).map(({ si, s, doneC, total }) => {
+      html += inProgressM.slice(0, lastSess?.type === 'review' ? 3 : 4).map(({ si, s, doneC, total }) => {
         const { mc } = getMajorColor(s.mainKey);
         return `<div class="mh-continue-item" onclick="mobileNav('sections');setTimeout(()=>openSubsec(${si}),50)" style="--mc:${mc}">
           <div class="mh-continue-dot"></div>
@@ -3029,8 +3086,21 @@ function renderMobileHome() {
           <div class="mh-continue-arrow">›</div>
         </div>`;
       }).join('');
+      contList.innerHTML = html;
     }
   }
+}
+
+function mobileGoToReview(lvl) {
+  const mhome = document.getElementById('mobile-home-overlay');
+  if (mhome) mhome.classList.add('hidden');
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) sidebar.classList.add('mobile-open');
+  switchTab('review');
+  const nav = document.querySelector('.mobile-nav');
+  if (nav) nav.style.display = 'flex';
+  mobileTab = 'sections';
+  startReviewMode(lvl);
 }
 
 function updateMobileFlagBadge() {
