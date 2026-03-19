@@ -2067,10 +2067,6 @@ function renderQuestion() {
       <div class="q-objective">${q.objective}</div>
       <div class="q-footer">
         <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap">
-          <button class="btn-anki-panel${ankiPanelVisible?' active':''}" id="btn-show-anki" onclick="toggleAnkiCards('${q.id}')">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-            ${ankiPanelVisible ? 'Hide Cards' : 'Show Cards'}
-          </button>
           <span class="anki-flash" id="anki-flash">Copied ✓</span>
         </div>
         ${reviewMode ? `
@@ -2097,7 +2093,7 @@ function renderQuestion() {
 
     <div class="q-notes-panel">
       <div class="q-notes-header" onclick="toggleNotesPanel()">
-        <span class="q-notes-title${hasContent?' has-content':''}">NOTES & IMAGES${hasContent?' ●':''}</span>
+        <span class="q-notes-title${hasContent?' has-content':''}">NOTES${hasContent?' ●':''}</span>
         <span style="font-size:0.7rem;color:var(--muted)" id="notes-chevron">▼</span>
       </div>
       <div class="q-notes-body" id="notes-body" style="${hasContent?'':'display:none'}">
@@ -2125,22 +2121,22 @@ function renderQuestion() {
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:0.3rem"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           ANKI CARDS
         </span>
-        <span style="font-size:0.7rem;color:var(--muted)" id="mobile-anki-chevron">▼</span>
+        <span style="font-size:0.7rem;color:var(--muted)" id="mobile-anki-chevron">▲</span>
       </div>
-      <div id="mobile-anki-body" style="display:none"></div>
+      <div id="mobile-anki-body" style="display:block"></div>
     </div>
 
     <!-- Desktop inline Anki panel box -->
-    <div id="desktop-anki-wrap" style="display:${ankiDataLoaded || ankiPanelVisible ? 'block' : 'none'};margin-top:1rem;">
+    <div id="desktop-anki-wrap" style="display:block;margin-top:1rem;">
       <div class="anki-panel-box">
-        <div class="anki-panel-header">
+        <div class="anki-panel-header" onclick="toggleDesktopAnkiPanel()" style="cursor:pointer">
           <div class="anki-panel-title">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
             ANKI CARDS
           </div>
           <div style="display:flex;align-items:center;gap:0.6rem">
             <span class="anki-panel-status" id="anki-panel-status"></span>
-            <button class="anki-panel-toggle" onclick="hideDesktopAnkiPanel()">✕</button>
+            <span id="desktop-anki-chevron" style="font-size:0.7rem;color:var(--muted)">▲</span>
           </div>
         </div>
         <div class="anki-panel-body" id="anki-panel-body"></div>
@@ -2153,21 +2149,8 @@ function renderQuestion() {
   // Apply any saved highlights to the question text
   applyHighlights(currentSubsec, currentQ);
 
-  // If Anki panel is open or data loaded, refresh/show it for the new question
-  if (ankiDataLoaded) {
-    ankiPanelVisible = true;
-    const wrap = document.getElementById('desktop-anki-wrap');
-    if (wrap) wrap.style.display = 'block';
-    renderAnkiPanel(q.id);
-  } else if (ankiPanelVisible) {
-    // Panel should be visible — auto-load cards
-    const wrap = document.getElementById('desktop-anki-wrap');
-    if (wrap) wrap.style.display = 'block';
-    loadAnkiCards(q.id);
-  } else {
-    const wrap = document.getElementById('desktop-anki-wrap');
-    if (wrap) wrap.style.display = 'none';
-  }
+  // Load anki cards — respect whatever open/closed state the user last set
+  loadAnkiCards(q.id);
   const bar = document.getElementById('mobile-q-bar');
   const mprev = document.getElementById('mobile-q-prev');
   const mnext = document.getElementById('mobile-q-next');
@@ -2949,13 +2932,25 @@ let ankiDataLoading = false;
 let ankiDataLoaded = false;
 let ankiPanelVisible = true;
 
-function hideDesktopAnkiPanel() {
-  ankiPanelVisible = false;
-  const wrap = document.getElementById('desktop-anki-wrap');
-  if (wrap) wrap.style.display = 'none';
+function toggleDesktopAnkiPanel() {
+  const body = document.getElementById('anki-panel-body');
+  const chev = document.getElementById('desktop-anki-chevron');
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  ankiPanelVisible = !isOpen;
+  body.style.display = isOpen ? 'none' : 'block';
+  if (chev) chev.textContent = isOpen ? '▼' : '▲';
 }
 
-function toggleAnkiPanel() { hideDesktopAnkiPanel(); }
+function hideDesktopAnkiPanel() {
+  const body = document.getElementById('anki-panel-body');
+  const chev = document.getElementById('desktop-anki-chevron');
+  if (body) body.style.display = 'none';
+  if (chev) chev.textContent = '▼';
+  ankiPanelVisible = false;
+}
+
+function toggleAnkiPanel() { toggleDesktopAnkiPanel(); }
 
 async function loadAnkiData() {
   if (ankiDataLoaded || ankiDataLoading) return;
@@ -3050,36 +3045,23 @@ async function copyQId(id) {
   if (fl) { fl.textContent = 'ID copied ✓'; fl.classList.add('show'); setTimeout(() => fl.classList.remove('show'), 1800); }
 }
 
-async function toggleAnkiCards(questionId) {
-  if (ankiPanelVisible) {
-    // Hide
-    ankiPanelVisible = false;
-    const wrap = document.getElementById('desktop-anki-wrap');
-    if (wrap) wrap.style.display = 'none';
-    const btn = document.getElementById('btn-show-anki');
-    if (btn) btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Show Cards`;
-    if (btn) btn.classList.remove('active');
-  } else {
-    await loadAnkiCards(questionId);
-  }
-}
-
 async function loadAnkiCards(questionId) {
-  const btn = document.getElementById('btn-show-anki');
-  if (btn) { btn.classList.add('loading'); btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Loading…`; }
-
   if (!ankiDataLoaded) await loadAnkiData();
 
-  ankiPanelVisible = true;
-  const wrap = document.getElementById('desktop-anki-wrap');
-  if (wrap) wrap.style.display = 'block';
-
-  if (btn) {
-    btn.classList.remove('loading');
-    btn.classList.add('active');
-    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Hide Cards`;
-  }
+  // Render content into both panels
   renderAnkiPanel(questionId);
+  renderMobileAnkiPanel(questionId);
+
+  // Apply the saved open/closed state
+  const desktopBody = document.getElementById('anki-panel-body');
+  const desktopChev = document.getElementById('desktop-anki-chevron');
+  const mobileBody = document.getElementById('mobile-anki-body');
+  const mobileChev = document.getElementById('mobile-anki-chevron');
+
+  if (desktopBody) desktopBody.style.display = ankiPanelVisible ? 'block' : 'none';
+  if (desktopChev) desktopChev.textContent = ankiPanelVisible ? '▲' : '▼';
+  if (mobileBody) mobileBody.style.display = ankiPanelVisible ? 'block' : 'none';
+  if (mobileChev) mobileChev.textContent = ankiPanelVisible ? '▲' : '▼';
 }
 
 function renderAnkiPanel(questionId) {
@@ -3128,31 +3110,18 @@ function renderAnkiPanel(questionId) {
   }).filter(Boolean).join('');
 }
 
-async function toggleMobileAnkiPanel(questionId) {
+function renderMobileAnkiPanel(questionId) {
   const body = document.getElementById('mobile-anki-body');
-  const chev = document.getElementById('mobile-anki-chevron');
   if (!body) return;
-
-  const isOpen = body.style.display !== 'none';
-  if (isOpen) {
-    body.style.display = 'none';
-    if (chev) chev.textContent = '▼';
+  if (!ankiCardIndex) {
+    body.innerHTML = '<div style="padding:1rem;text-align:center;color:var(--muted);font-size:0.78rem">Cards not loaded yet</div>';
     return;
   }
-
-  // Open — load if needed
-  body.style.display = 'block';
-  if (chev) chev.textContent = '▲';
-  body.innerHTML = '<div style="padding:1rem;text-align:center;color:var(--muted);font-size:0.78rem">Loading cards…</div>';
-
-  if (!ankiDataLoaded) await loadAnkiData();
-
   const cards = ankiCardIndex?.[String(questionId)] || [];
   if (!cards.length) {
     body.innerHTML = `<div style="padding:0.75rem;text-align:center;color:var(--muted);font-size:0.78rem">No Anki cards found for ID ${questionId}</div>`;
     return;
   }
-
   const FIELDS = [
     { key: 'text',                label: 'Text',                 cls: ''          },
     { key: 'extra',               label: 'Extra',                cls: 'extra'     },
@@ -3160,7 +3129,6 @@ async function toggleMobileAnkiPanel(questionId) {
     { key: 'additionalResources', label: 'Additional Resources', cls: 'resources' },
     { key: 'sketchy',             label: 'Sketchy',              cls: 'sketchy'   },
   ];
-
   body.innerHTML = cards.map((card, idx) => {
     const fields = FIELDS.map(f => {
       const val = card[f.key];
@@ -3180,6 +3148,16 @@ async function toggleMobileAnkiPanel(questionId) {
       ${fields}
     </div>`;
   }).filter(Boolean).join('');
+}
+
+function toggleMobileAnkiPanel(questionId) {
+  const body = document.getElementById('mobile-anki-body');
+  const chev = document.getElementById('mobile-anki-chevron');
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  ankiPanelVisible = !isOpen;
+  body.style.display = isOpen ? 'none' : 'block';
+  if (chev) chev.textContent = isOpen ? '▼' : '▲';
 }
 
 function toggleAnkiField(id) {
@@ -3604,6 +3582,8 @@ let _savedScrollY = 0;
 function showHome() {
   if (window.innerWidth <= 680) return;
   renderHomeStats();
+  // Reset anki panel to open for next study session
+  ankiPanelVisible = true;
   // Save current scroll position and lock body
   _savedScrollY = window.scrollY;
   document.body.style.overflow = 'hidden';
