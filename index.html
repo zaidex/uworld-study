@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZWorld</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230d0f14'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%234f9cf9' stroke-width='1.5' stroke-dasharray='4 6' opacity='0.5'/%3E%3Crect x='20' y='21' width='24' height='5' rx='1.5' fill='%23e2e8f0'/%3E%3Cpolygon points='44,26 20,42 20,37 44,21' fill='%234f9cf9'/%3E%3Crect x='20' y='38' width='24' height='5' rx='1.5' fill='%233ecf8e'/%3E%3C/svg%3E">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
@@ -31,7 +32,10 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
   padding: 0.8rem 1.5rem;
   display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
 }
-.header-brand { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--accent); letter-spacing: 0.2em; white-space: nowrap; font-weight: 600; }
+.header-brand { display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
+.header-brand .zw-wordmark { font-family: 'IBM Plex Mono', monospace; font-size: 0.82rem; font-weight: 700; color: var(--text); letter-spacing: 0.05em; }
+.header-brand .zw-wordmark span { color: var(--accent); }
+.zw-icon { flex-shrink: 0; }
 .progress-wrap { flex: 1; min-width: 160px; }
 .progress-label { display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); margin-bottom: 0.3rem; font-family: 'IBM Plex Mono', monospace; }
 .progress-bar-track { height: 5px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
@@ -43,6 +47,100 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 
 /* LAYOUT */
 .layout { display: grid; grid-template-columns: 310px 1fr; min-height: calc(100vh - 53px); }
+.layout.anki-panel-open { grid-template-columns: 310px 1fr 380px; }
+
+/* ANKI PANEL */
+.anki-panel {
+  display: none; flex-direction: column;
+  background: var(--surface); border-left: 1px solid var(--border);
+  position: sticky; top: 53px; height: calc(100vh - 53px);
+  overflow: hidden;
+}
+.layout.anki-panel-open .anki-panel { display: flex; }
+.anki-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--border);
+  flex-shrink: 0; background: var(--surface);
+}
+.anki-panel-title {
+  font-size: 0.75rem; font-weight: 600; color: var(--text);
+  display: flex; align-items: center; gap: 0.4rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+.anki-panel-status { font-size: 0.65rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); }
+.anki-panel-toggle {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 0.75rem; padding: 0.2rem 0.4rem; border-radius: 4px; transition: all 0.15s;
+}
+.anki-panel-toggle:hover { color: var(--text); background: var(--surface2); }
+.anki-panel-body { flex: 1; overflow-y: auto; padding: 0.75rem; }
+.anki-panel-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--muted); font-size: 0.78rem; text-align: center; padding: 2rem; }
+
+/* Anki card display */
+.anki-card-item {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 0.75rem; overflow: hidden;
+}
+.anki-card-item:last-child { margin-bottom: 0; }
+.anki-card-num {
+  font-size: 0.62rem; font-family: 'IBM Plex Mono', monospace;
+  color: var(--accent); padding: 0.4rem 0.75rem 0;
+  opacity: 0.7;
+}
+.anki-field { border-top: 1px solid var(--border); }
+.anki-field:first-child { border-top: none; }
+.anki-field-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.45rem 0.75rem; cursor: pointer; user-select: none;
+  transition: background 0.12s;
+}
+.anki-field-header:hover { background: rgba(79,156,249,0.04); }
+.anki-field-label {
+  font-size: 0.65rem; font-weight: 600; font-family: 'IBM Plex Mono', monospace;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent);
+}
+.anki-field-label.extra { color: #3ecf8e; }
+.anki-field-label.lecture { color: #f59e0b; }
+.anki-field-label.resources { color: #a78bfa; }
+.anki-field-chevron { font-size: 0.6rem; color: var(--muted); transition: transform 0.2s; }
+.anki-field-chevron.open { transform: rotate(180deg); }
+.anki-field-body {
+  padding: 0.5rem 0.75rem 0.75rem;
+  font-size: 0.78rem; line-height: 1.65; color: var(--text);
+  display: none;
+}
+.anki-field-body.open { display: block; }
+.anki-field-body img { max-width: 100%; border-radius: 6px; margin: 0.3rem 0; }
+.anki-field-body a { color: var(--accent); }
+.anki-field-body table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+.anki-field-body td, .anki-field-body th { border: 1px solid var(--border); padding: 0.3rem 0.5rem; }
+
+/* Mobile Anki panel - hidden on desktop, shown on mobile */
+.mobile-anki-panel { display: none; }
+@media (max-width: 680px) {
+  .mobile-anki-panel {
+    display: block;
+    margin-top: 0.75rem;
+    background: var(--surface2); border: 1px solid rgba(62,207,142,0.2);
+    border-radius: 10px; overflow: hidden;
+  }
+  .mobile-anki-panel .q-notes-header {
+    border-bottom: none;
+  }
+  #mobile-anki-body {
+    padding: 0.75rem;
+    border-top: 1px solid var(--border);
+  }
+}
+.btn-anki-panel {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.38rem 0.65rem; border-radius: 7px; font-size: 0.75rem;
+  font-family: 'IBM Plex Sans', sans-serif; font-weight: 500; cursor: pointer;
+  border: 1px solid rgba(62,207,142,0.3); background: rgba(62,207,142,0.08);
+  color: #3ecf8e; transition: all 0.15s;
+}
+.btn-anki-panel:hover { background: rgba(62,207,142,0.15); border-color: #3ecf8e; }
+.btn-anki-panel.loading { opacity: 0.6; cursor: wait; }
 
 /* SIDEBAR */
 .sidebar { background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto; position: sticky; top: 53px; max-height: calc(100vh - 53px); display: flex; flex-direction: column; }
@@ -458,6 +556,9 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 
 /* ── MOBILE ─────────────────────────────────────────────────────────────────── */
 @media (max-width: 680px) {
+  .anki-panel { display: none !important; }
+  .btn-anki-panel { display: none !important; }
+  .layout.anki-panel-open { grid-template-columns: 310px 1fr !important; }
 
   /* ─── HEADER ─── */
   .sidebar-toggle-btn { display: none !important; }
@@ -796,6 +897,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 }
 .cont-block-label { font-size: 0.62rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.4rem; }
 .cont-empty { font-size: 0.75rem; color: var(--muted); padding: 0.3rem 0 0.5rem; }
+.continue-item {
   display: flex; align-items: center; gap: 0.75rem;
   padding: 0.7rem 0.85rem;
   background: var(--surface2); border: 1px solid var(--border);
@@ -970,50 +1072,130 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 }
 /* ── AUTH SCREEN ─────────────────────────────────────────────────────────────── */
 #auth-screen {
-  position: fixed; inset: 0; background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 9999; padding: 1.5rem;
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  z-index: 9999; padding: 1.5rem; overflow: hidden; background: #0d0f14;
 }
+.auth-bg-grid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(79,156,249,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79,156,249,0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: authGridShift 20s linear infinite;
+}
+@keyframes authGridShift { 0%{background-position:0 0} 100%{background-position:40px 40px} }
+.auth-scan {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(79,156,249,0.018) 50%, transparent 100%);
+  background-size: 100% 200px;
+  animation: authScan 6s linear infinite;
+}
+@keyframes authScan { 0%{background-position:0 -200px} 100%{background-position:0 100vh} }
+.auth-orb {
+  position: absolute; border-radius: 50%; pointer-events: none;
+  filter: blur(80px); animation: authOrbFloat 8s ease-in-out infinite;
+}
+.auth-orb-1 { width:380px;height:380px;background:rgba(79,156,249,0.07);top:-100px;left:-100px;animation-delay:0s; }
+.auth-orb-2 { width:280px;height:280px;background:rgba(62,207,142,0.06);bottom:-80px;right:-80px;animation-delay:-4s; }
+.auth-orb-3 { width:180px;height:180px;background:rgba(167,139,250,0.05);top:40%;right:20%;animation-delay:-2s; }
+@keyframes authOrbFloat { 0%,100%{transform:translate(0,0)} 50%{transform:translate(15px,-15px)} }
+.auth-particles { position:absolute; inset:0; pointer-events:none; overflow:hidden; }
 .auth-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: 16px; padding: 2.5rem 2rem; width: 100%; max-width: 380px;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+  position: relative; z-index: 10;
+  background: rgba(20,23,32,0.92);
+  border: 1px solid rgba(79,156,249,0.15);
+  border-radius: 20px; padding: 2.5rem 2rem;
+  width: 100%; max-width: 380px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 0 0 1px rgba(79,156,249,0.05), 0 32px 64px rgba(0,0,0,0.5);
+  animation: authCardIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
 }
-.auth-logo { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--accent); letter-spacing: 0.15em; margin-bottom: 1.5rem; }
-.auth-title { font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 0.3rem; }
-.auth-subtitle { font-size: 0.83rem; color: var(--muted); margin-bottom: 1.8rem; }
+@keyframes authCardIn { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+.auth-card::before {
+  content:''; position:absolute; top:-1px; left:-1px; width:14px; height:14px;
+  border-top:2px solid #4f9cf9; border-left:2px solid #4f9cf9; border-radius:4px 0 0 0;
+}
+.auth-card::after {
+  content:''; position:absolute; bottom:-1px; right:-1px; width:14px; height:14px;
+  border-bottom:2px solid #3ecf8e; border-right:2px solid #3ecf8e; border-radius:0 0 4px 0;
+}
+.auth-logo { text-align:center; margin-bottom:1.8rem; animation:authFadeUp 0.6s ease 0.1s both; }
+.auth-logo-text {
+  font-family:'IBM Plex Mono',monospace; font-size:2.8rem; font-weight:700;
+  line-height:1; letter-spacing:-0.02em;
+}
+.auth-logo-z {
+  color:#4f9cf9; display:inline-block;
+  animation: authZPulse 3s ease-in-out infinite;
+}
+@keyframes authZPulse {
+  0%,100%{text-shadow:0 0 20px rgba(79,156,249,0.3)}
+  50%{text-shadow:0 0 40px rgba(79,156,249,0.7),0 0 80px rgba(79,156,249,0.2)}
+}
+.auth-logo-w { color:#f1f5f9; display:inline-block; }
+.auth-logo-orld { color:#334155; font-weight:300; }
+.auth-logo-bar {
+  width:0; height:2px; margin:0.5rem auto 0;
+  background:linear-gradient(90deg,#4f9cf9,#3ecf8e,transparent);
+  border-radius:99px; animation:authBarGrow 0.8s cubic-bezier(0.16,1,0.3,1) 0.4s forwards;
+}
+@keyframes authBarGrow { to{width:80px} }
+.auth-logo-tag {
+  font-family:'IBM Plex Mono',monospace; font-size:0.58rem; color:#334155;
+  letter-spacing:0.22em; margin-top:0.55rem;
+  animation:authFadeUp 0.6s ease 0.5s both;
+}
+@keyframes authFadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.auth-logo { text-align: center; margin-bottom: 1.8rem; }
+.auth-title { font-size:1rem; font-weight:500; color:#94a3b8; text-align:center; margin-bottom:1.5rem; animation:authFadeUp 0.6s ease 0.4s both; }
+.auth-subtitle { display:none; }
 .auth-input {
-  display: block; width: 100%; box-sizing: border-box;
-  padding: 0.72rem 0.9rem; margin-bottom: 0.75rem;
-  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
-  color: var(--text); font-size: 0.9rem; font-family: 'IBM Plex Sans', sans-serif;
-  outline: none; transition: border-color 0.15s;
+  display:block; width:100%; box-sizing:border-box;
+  padding:0.72rem 0.9rem; margin-bottom:0.75rem;
+  background:rgba(28,32,48,0.8); border:1px solid #252a3a; border-radius:8px;
+  color:#e2e8f0; font-size:0.9rem; font-family:'IBM Plex Sans',sans-serif;
+  outline:none; transition:border-color 0.2s, box-shadow 0.2s;
+  animation:authFadeUp 0.6s ease 0.5s both;
 }
-.auth-input:focus { border-color: var(--accent); }
-.auth-input::placeholder { color: var(--muted); }
+.auth-input:focus { border-color:#4f9cf9; box-shadow:0 0 0 3px rgba(79,156,249,0.1); }
+.auth-input::placeholder { color:#334155; }
 .auth-btn {
-  display: block; width: 100%; padding: 0.78rem; margin-top: 0.25rem;
-  background: var(--accent); color: #fff; border: none; border-radius: 8px;
-  font-size: 0.92rem; font-family: 'IBM Plex Sans', sans-serif; font-weight: 600;
-  cursor: pointer; transition: opacity 0.15s;
+  display:block; width:100%; padding:0.78rem; margin-top:0.25rem;
+  background:linear-gradient(135deg,#4f9cf9,#3b82f6); color:#fff; border:none; border-radius:8px;
+  font-size:0.92rem; font-family:'IBM Plex Sans',sans-serif; font-weight:600;
+  cursor:pointer; transition:opacity 0.15s, transform 0.15s;
+  animation:authFadeUp 0.6s ease 0.6s both;
 }
-.auth-btn:hover { opacity: 0.88; }
-.auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.auth-links { display: flex; justify-content: space-between; margin-top: 1rem; flex-wrap: wrap; gap: 0.5rem; }
-.auth-link { background: none; border: none; color: var(--muted); font-size: 0.78rem; cursor: pointer; font-family: 'IBM Plex Sans', sans-serif; padding: 0; }
-.auth-link:hover { color: var(--accent); }
-.auth-error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #f87171; border-radius: 7px; padding: 0.6rem 0.85rem; font-size: 0.8rem; margin-bottom: 1rem; }
-.auth-success { background: rgba(62,207,142,0.1); border: 1px solid rgba(62,207,142,0.3); color: var(--green); border-radius: 7px; padding: 0.6rem 0.85rem; font-size: 0.8rem; margin-bottom: 1rem; }
+.auth-btn:hover { opacity:0.88; transform:translateY(-1px); }
+.auth-btn:active { transform:translateY(0); }
+.auth-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; }
+.auth-links { display:flex; justify-content:space-between; margin-top:1rem; flex-wrap:wrap; gap:0.5rem; animation:authFadeUp 0.6s ease 0.7s both; }
+.auth-link { background:none; border:none; color:#334155; font-size:0.78rem; cursor:pointer; font-family:'IBM Plex Sans',sans-serif; padding:0; transition:color 0.15s; }
+.auth-link:hover { color:#4f9cf9; }
+.auth-error { background:rgba(248,113,113,0.1); border:1px solid rgba(248,113,113,0.3); color:#f87171; border-radius:7px; padding:0.6rem 0.85rem; font-size:0.8rem; margin-bottom:1rem; }
+.auth-success { background:rgba(62,207,142,0.1); border:1px solid rgba(62,207,142,0.3); color:#3ecf8e; border-radius:7px; padding:0.6rem 0.85rem; font-size:0.8rem; margin-bottom:1rem; }
 </style>
 </head>
 <body>
 
 <!-- ── LOGIN SCREEN ──────────────────────────────────────────────────────── -->
 <div id="auth-screen" style="display:none">
+  <div class="auth-bg-grid"></div>
+  <div class="auth-scan"></div>
+  <div class="auth-orb auth-orb-1"></div>
+  <div class="auth-orb auth-orb-2"></div>
+  <div class="auth-orb auth-orb-3"></div>
+  <div class="auth-particles" id="auth-particles"></div>
+
   <div class="auth-card">
-    <div class="auth-logo">UW // STUDY</div>
-    <div class="auth-title" id="auth-title">Welcome back</div>
-    <div class="auth-subtitle" id="auth-subtitle">Sign in to continue</div>
+    <div class="auth-logo">
+      <div class="auth-logo-text">
+        <span class="auth-logo-z">Z</span><span class="auth-logo-w">W</span><span class="auth-logo-orld">orld</span>
+      </div>
+      <div class="auth-logo-bar"></div>
+      <div class="auth-logo-tag">MEDICAL STUDY SYSTEM</div>
+    </div>
+
+    <div class="auth-title" id="auth-title">Sign in to continue</div>
 
     <div id="auth-error" class="auth-error" style="display:none"></div>
     <div id="auth-success" class="auth-success" style="display:none"></div>
@@ -1055,7 +1237,11 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
   <button class="btn-home" onclick="showHome()" title="Dashboard">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
   </button>
-  <div class="header-brand">ZWorld</div>
+  <div class="header-brand">
+    <div class="zw-wordmark" style="font-family:'IBM Plex Mono',monospace;font-size:0.9rem;font-weight:700;letter-spacing:-0.01em">
+      <span style="color:#4f9cf9">Z</span><span style="color:var(--text)">W</span><span style="color:var(--muted);font-weight:300">orld</span>
+    </div>
+  </div>
   <div class="progress-wrap">
     <div class="progress-label"><span>Overall Progress</span><span id="progress-text">0 / 0</span></div>
     <div class="progress-bar-track"><div class="progress-bar-fill" id="global-bar" style="width:0%"></div></div>
@@ -1085,7 +1271,7 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
   </div>
 </div>
 
-<div class="layout">
+<div class="layout" id="main-layout">
   <div class="sidebar" id="sidebar">
     <div class="sidebar-tabs">
       <button class="sidebar-tab active" id="tab-sections" onclick="switchTab('sections')">Sections</button>
@@ -1104,6 +1290,25 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
       </div>
       <div style="font-size:1rem">Select a section to begin studying</div>
       <div class="empty-hint">4,025 questions · Medicine, Surgery, Peds, OB/GYN, Psych, Biostats, Social Sciences</div>
+    </div>
+  </div>
+  <!-- Anki Cards Panel -->
+  <div class="anki-panel" id="anki-panel">
+    <div class="anki-panel-header">
+      <div class="anki-panel-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        Anki Cards
+      </div>
+      <div style="display:flex;align-items:center;gap:0.5rem">
+        <span class="anki-panel-status" id="anki-panel-status"></span>
+        <button class="anki-panel-toggle" id="anki-panel-toggle" onclick="toggleAnkiPanel()" title="Hide panel">✕</button>
+      </div>
+    </div>
+    <div class="anki-panel-body" id="anki-panel-body">
+      <div class="anki-panel-empty" id="anki-panel-empty">
+        <div style="font-size:1.5rem;margin-bottom:0.5rem;opacity:0.3">📚</div>
+        <div>Select a question to see its Anki cards</div>
+      </div>
     </div>
   </div>
 </div>
@@ -1195,7 +1400,9 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
 
     <!-- Greeting -->
     <div class="mh-greeting">
-      <div class="mh-greeting-label">ZWorld</div>
+      <div class="mh-greeting-label">
+        <span style="font-family:'IBM Plex Mono',monospace;font-weight:700;letter-spacing:-0.01em"><span style="color:#4f9cf9">Z</span><span style="color:var(--text)">W</span><span style="color:var(--muted);font-weight:300">orld</span></span>
+      </div>
       <div class="mh-greeting-big">Welcome back</div>
       <div class="mh-greeting-sub" id="mh-subtitle">Loading…</div>
       <div class="mh-date" id="mh-date"></div>
@@ -1399,7 +1606,17 @@ function saveLastSession(type, si, lvl) {
   try {
     const all = JSON.parse(localStorage.getItem(LAST_SESSION_KEY) || '{}');
     if (type === 'study') all.study = { si, ts: Date.now() };
-    if (type === 'review') all.review = { lvl, ts: Date.now() };
+    if (type === 'review') {
+      // Save full review session state so we can resume exactly
+      all.review = {
+        lvl,
+        list: reviewList.map(r => ({ si: r.si, qi: r.qi })),
+        pos: reviewPos,
+        originalCount: reviewOriginalCount,
+        ts: Date.now()
+      };
+    }
+    if (type === 'review-clear') delete all.review;
     localStorage.setItem(LAST_SESSION_KEY, JSON.stringify(all));
   } catch(e) {}
 }
@@ -1679,6 +1896,7 @@ function filterSidebar(val) { renderSidebar(val); }
 function openSubsec(si) {
   reviewMode = false; reviewHistory = []; reviewList = [];
   currentSubsec = si;
+  tabState.sections.subsec = si;
   saveLastSession('study', si);
   const sec = ALL_SUBSECS[si];
   let startQ = 0;
@@ -1790,7 +2008,14 @@ function renderQuestion() {
       <div class="q-objective">${q.objective}</div>
       <div class="q-footer">
         <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap">
-          <button class="q-id-btn" onclick="openInAnki('${q.id}')">${q.id}</button>
+          <button class="q-id-btn" onclick="openInAnki('${q.id}')" title="${ankiConnected ? 'Open in Anki' : 'Open in AnkiWeb'}">
+            ${q.id}
+            <span style="font-size:0.6rem;opacity:0.6;margin-left:0.2rem">${ankiConnected ? '↗' : '🌐'}</span>
+          </button>
+          <button class="btn-anki-panel" id="btn-show-anki" onclick="loadAnkiCards('${q.id}')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Cards
+          </button>
           <span class="anki-flash" id="anki-flash">Opened in Anki ✓</span>
         </div>
         ${reviewMode ? `
@@ -1837,12 +2062,29 @@ function renderQuestion() {
         </div>
       </div>
     </div>
+
+    <!-- Mobile Anki Cards Panel (desktop uses sidebar panel) -->
+    <div class="mobile-anki-panel" id="mobile-anki-panel">
+      <div class="q-notes-header" onclick="toggleMobileAnkiPanel('${q.id}')">
+        <span class="q-notes-title" style="color:#3ecf8e">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:0.3rem"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          ANKI CARDS
+        </span>
+        <span style="font-size:0.7rem;color:var(--muted)" id="mobile-anki-chevron">▼</span>
+      </div>
+      <div id="mobile-anki-body" style="display:none"></div>
+    </div>
   </div>`;
 
   main.innerHTML = html;
 
   // Apply any saved highlights to the question text
   applyHighlights(currentSubsec, currentQ);
+
+  // If Anki panel is open, refresh it for the new question
+  if (ankiPanelVisible && ankiDataLoaded) {
+    renderAnkiPanel(q.id);
+  }
   const bar = document.getElementById('mobile-q-bar');
   const mprev = document.getElementById('mobile-q-prev');
   const mnext = document.getElementById('mobile-q-next');
@@ -1866,13 +2108,57 @@ function renderQuestion() {
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
 let currentTab = 'sections';
+// Per-tab state: remember what was open in each tab
+let tabState = {
+  sections: { subsec: null },
+  review: { active: false }
+};
+
 function switchTab(tab) {
+  const prevTab = currentTab;
+
+  // Save state of the tab we're LEAVING
+  if (prevTab === 'sections') {
+    tabState.sections.subsec = currentSubsec; // could be null or a valid index
+  } else if (prevTab === 'review') {
+    tabState.review.active = reviewMode;
+  }
+
   currentTab = tab;
   document.getElementById('tab-sections').classList.toggle('active', tab==='sections');
   document.getElementById('tab-review').classList.toggle('active', tab==='review');
   document.getElementById('sections-panel').style.display = tab==='sections' ? 'flex' : 'none';
   document.getElementById('review-panel-sidebar').style.display = tab==='review' ? 'block' : 'none';
-  if (tab==='review') renderReviewSidebar();
+
+  const main = document.getElementById('main-content');
+
+  if (tab === 'sections') {
+    // Pause review mode (don't destroy it, just step away)
+    reviewMode = false;
+
+    // Restore whatever was open in sections tab
+    const savedSubsec = tabState.sections.subsec;
+    currentSubsec = savedSubsec;
+    if (savedSubsec !== null && savedSubsec !== undefined && ALL_SUBSECS[savedSubsec]) {
+      renderQuestion();
+    } else {
+      if (main) main.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div><div class="empty-hint">Select a section to begin</div></div>`;
+    }
+
+  } else if (tab === 'review') {
+    // Restore review state
+    if (tabState.review.active && reviewList.length > 0 && reviewPos < reviewList.length) {
+      // Resume review where we left off
+      reviewMode = true;
+      currentSubsec = reviewList[reviewPos].si;
+      currentQ = reviewList[reviewPos].qi;
+      renderQuestion();
+    } else {
+      // No active review — show empty state
+      if (main) main.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-hint">Select a level to start reviewing</div></div>`;
+    }
+    renderReviewSidebar();
+  }
 }
 
 // ── FLAGGED SIDEBAR ───────────────────────────────────────────────────────────
@@ -2253,8 +2539,37 @@ function startReviewMode(lvl, filterSi) {
   reviewHistory = [];
   currentSubsec = list[0].si;
   currentQ = list[0].qi;
+  tabState.review.active = true;
   saveLastSession('review', null, lvl);
   renderQuestion();
+  if (isMobile()) {
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    const mhome = document.getElementById('mobile-home-overlay');
+    if (mhome) mhome.classList.add('hidden');
+    mobileTab = 'study';
+    ['home','sections','study'].forEach(t => {
+      const btn = document.getElementById(`mnav-${t}`);
+      if (btn) btn.classList.toggle('active', t === 'study');
+    });
+    const nav = document.querySelector('.mobile-nav');
+    if (nav) nav.style.display = 'none';
+  }
+}
+
+function resumeReviewSession(saved) {
+  // Restore exact session from saved state
+  if (!saved?.list?.length) { startReviewMode(saved.lvl); return; }
+  reviewMode = true;
+  reviewLevel = saved.lvl;
+  reviewList = saved.list;
+  reviewOriginalCount = saved.originalCount || saved.list.length;
+  reviewPos = Math.min(saved.pos || 0, saved.list.length - 1);
+  reviewHistory = [];
+  currentSubsec = reviewList[reviewPos].si;
+  currentQ = reviewList[reviewPos].qi;
+  tabState.review.active = true;
+  renderQuestion();
+  if (currentTab === 'review') renderReviewSidebar();
   if (isMobile()) {
     document.getElementById('sidebar').classList.remove('mobile-open');
     const mhome = document.getElementById('mobile-home-overlay');
@@ -2280,6 +2595,8 @@ function exitReviewMode(completed) {
   reviewHistory = [];
 
   if (completed) {
+    saveLastSession('review-clear');
+    tabState.review.active = false;
     // Clear the main content — blank it out
     currentSubsec = null;
     const main = document.getElementById('main-content');
@@ -2336,13 +2653,13 @@ function reviewAssign(level) {
   saveProgress();
   updateReviewBadge();
   reviewPos++;
-  
   if (reviewPos >= reviewOriginalCount) {
     exitReviewMode(true);
     return;
   }
   currentSubsec = reviewList[reviewPos].si;
   currentQ = reviewList[reviewPos].qi;
+  saveLastSession('review', null, reviewLevel); // persist updated pos
   renderQuestion();
   if (currentTab === 'review') renderReviewSidebar();
 }
@@ -2357,13 +2674,13 @@ function graduateQ() {
   saveProgress();
   updateReviewBadge();
   reviewPos++;
-  
   if (reviewPos >= reviewOriginalCount) {
     exitReviewMode(true);
     return;
   }
   currentSubsec = reviewList[reviewPos].si;
   currentQ = reviewList[reviewPos].qi;
+  saveLastSession('review', null, reviewLevel); // persist updated pos
   renderQuestion();
   if (currentTab === 'review') renderReviewSidebar();
   showToast('Graduated ✓ — removed from review');
@@ -2495,40 +2812,243 @@ async function focusHelper() {
 }
 
 async function openInAnki(id) {
-  const query = `tag:*UWorld*::${id}`;
   const fl = document.getElementById('anki-flash');
-  if (fl) { fl.classList.add('show'); setTimeout(()=>fl.classList.remove('show'), 2200); }
 
-  if (location.protocol === 'https:') {
-    try { await navigator.clipboard.writeText(query); } catch(e) {}
-    showToast(`Copied to clipboard: ${query}`);
+  // On HTTPS (GitHub Pages / phone) or Anki desktop offline
+  const useAnkiWeb = location.protocol === 'https:' || !ankiConnected;
+
+  if (useAnkiWeb) {
+    // Copy the nid search to clipboard so user can paste immediately
+    const searchQuery = `nid:${id}`;
+    try { await navigator.clipboard.writeText(searchQuery); } catch(e) {}
+    // Open AnkiWeb search page
+    window.open('https://ankiweb.net/search', '_blank');
+    if (fl) {
+      fl.textContent = 'AnkiWeb opened — nid copied, just paste & search';
+      fl.classList.add('show');
+      setTimeout(() => { fl.classList.remove('show'); fl.textContent = 'Opened in Anki ✓'; }, 4000);
+    }
+    showToast(`📋 Copied: ${searchQuery} — paste in AnkiWeb search`);
     return;
   }
 
-  if (!ankiConnected) {
-    try { await navigator.clipboard.writeText(query); } catch(e) {}
-    showToast(`Anki offline — copied: ${query}`);
-    return;
-  }
-
+  // Anki desktop connected
+  const browseQuery = `tag:*UWorld*::${id}`;
+  if (fl) { fl.textContent = 'Opened in Anki ✓'; fl.classList.add('show'); setTimeout(() => fl.classList.remove('show'), 2200); }
   try {
-    // Open the Browse window with the card
-    await ankiAction('guiBrowse', { query });
-
+    await ankiAction('guiBrowse', { query: browseQuery });
     if (helperConnected) {
-      // Fire immediately — helper polls for Browse window and refocuses it
       await focusHelper();
     } else {
-      // Fallback: AnkiConnect toggle trick (less reliable)
       await ankiAction('guiDeckBrowser');
-      await ankiAction('guiBrowse', { query });
+      await ankiAction('guiBrowse', { query: browseQuery });
     }
-
-    showToast(`Anki: ${query}`);
+    showToast(`Anki: ${browseQuery}`);
   } catch(e) { showToast('Anki error: ' + e.message); }
 }
 
-// ── GLOBAL PROGRESS ───────────────────────────────────────────────────────────
+// ── ANKI CARDS PANEL ──────────────────────────────────────────────────────────
+const ANKI_CARDS_URL = 'https://zaidex.github.io/uworld-study/anki_cards.txt';
+let ankiCardIndex = null;   // Map: questionId → [{text, extra, lectureNotes, additionalResources}]
+let ankiDataLoading = false;
+let ankiDataLoaded = false;
+let ankiPanelVisible = false;
+
+function toggleAnkiPanel() {
+  ankiPanelVisible = !ankiPanelVisible;
+  document.getElementById('main-layout').classList.toggle('anki-panel-open', ankiPanelVisible);
+}
+
+async function loadAnkiData() {
+  if (ankiDataLoaded || ankiDataLoading) return;
+  ankiDataLoading = true;
+  document.getElementById('anki-panel-status').textContent = 'Loading…';
+  try {
+    const res = await fetch(ANKI_CARDS_URL);
+    if (!res.ok) throw new Error('Could not load anki_cards.txt');
+    const text = await res.text();
+    parseAnkiCards(text);
+    ankiDataLoaded = true;
+    document.getElementById('anki-panel-status').textContent = `${Object.keys(ankiCardIndex).length} IDs`;
+  } catch(e) {
+    document.getElementById('anki-panel-status').textContent = 'Load failed';
+    showToast('Could not load Anki cards file: ' + e.message);
+  } finally {
+    ankiDataLoading = false;
+  }
+}
+
+function parseAnkiCards(text) {
+  ankiCardIndex = {};
+  const lines = text.split('\n');
+  for (const line of lines) {
+    if (!line || line.startsWith('#')) continue;
+    const cols = splitTSVLine(line);
+    if (cols.length < 4) continue;
+    const textField     = cols[0] || '';
+    const extraField    = cols[1] || '';
+    const lectureField  = cols[2] || '';
+    const resourceField = cols[3] || '';
+    // Tags are in the last column that contains UWorld IDs
+    const tagsCol = cols[cols.length - 1] || '';
+    // Extract all UWorld IDs from tags
+    const idMatches = tagsCol.match(/#AK_Step\w+::#UWorld::\w+::(\d+)/g) || [];
+    const ids = idMatches.map(m => m.match(/::(\d+)$/)[1]);
+    if (!ids.length) continue;
+    const card = { text: textField, extra: extraField, lectureNotes: lectureField, additionalResources: resourceField };
+    for (const id of ids) {
+      if (!ankiCardIndex[id]) ankiCardIndex[id] = [];
+      ankiCardIndex[id].push(card);
+    }
+  }
+}
+
+function splitTSVLine(line) {
+  // Handle tab-separated with quoted fields containing tabs
+  const cols = [];
+  let cur = '';
+  let inQuote = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
+      else inQuote = !inQuote;
+    } else if (ch === '\t' && !inQuote) {
+      cols.push(cur); cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  cols.push(cur);
+  return cols;
+}
+
+async function loadAnkiCards(questionId) {
+  // Show panel if hidden
+  if (!ankiPanelVisible) {
+    ankiPanelVisible = true;
+    document.getElementById('main-layout').classList.add('anki-panel-open');
+  }
+
+  const btn = document.getElementById('btn-show-anki');
+  if (btn) { btn.classList.add('loading'); btn.textContent = 'Loading…'; }
+
+  // Load data if not yet loaded
+  if (!ankiDataLoaded) await loadAnkiData();
+
+  if (btn) {
+    btn.classList.remove('loading');
+    btn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Cards`;
+  }
+
+  renderAnkiPanel(questionId);
+}
+
+function renderAnkiPanel(questionId) {
+  const body = document.getElementById('anki-panel-body');
+  const empty = document.getElementById('anki-panel-empty');
+
+  if (!ankiCardIndex) {
+    body.innerHTML = '<div class="anki-panel-empty"><div>Cards not loaded yet</div></div>';
+    return;
+  }
+
+  const cards = ankiCardIndex[String(questionId)] || [];
+
+  if (!cards.length) {
+    body.innerHTML = `<div class="anki-panel-empty"><div style="font-size:1.5rem;margin-bottom:0.5rem;opacity:0.3">📭</div><div>No Anki cards found for ID ${questionId}</div></div>`;
+    return;
+  }
+
+  const FIELDS = [
+    { key: 'text',                label: 'Text',                 cls: ''         },
+    { key: 'extra',               label: 'Extra',                cls: 'extra'    },
+    { key: 'lectureNotes',        label: 'Lecture Notes',        cls: 'lecture'  },
+    { key: 'additionalResources', label: 'Additional Resources', cls: 'resources'},
+  ];
+
+  body.innerHTML = cards.map((card, idx) => {
+    const fields = FIELDS.map(f => {
+      const val = card[f.key];
+      if (!val || !val.trim()) return '';
+      const fieldId = `af-${idx}-${f.key}`;
+      return `<div class="anki-field">
+        <div class="anki-field-header" onclick="toggleAnkiField('${fieldId}')">
+          <span class="anki-field-label ${f.cls}">${f.label}</span>
+          <span class="anki-field-chevron open" id="${fieldId}-chev">▼</span>
+        </div>
+        <div class="anki-field-body open" id="${fieldId}">${val}</div>
+      </div>`;
+    }).join('');
+
+    if (!fields.trim()) return '';
+    return `<div class="anki-card-item">
+      ${cards.length > 1 ? `<div class="anki-card-num">CARD ${idx+1} / ${cards.length}</div>` : ''}
+      ${fields}
+    </div>`;
+  }).filter(Boolean).join('');
+}
+
+async function toggleMobileAnkiPanel(questionId) {
+  const body = document.getElementById('mobile-anki-body');
+  const chev = document.getElementById('mobile-anki-chevron');
+  if (!body) return;
+
+  const isOpen = body.style.display !== 'none';
+  if (isOpen) {
+    body.style.display = 'none';
+    if (chev) chev.textContent = '▼';
+    return;
+  }
+
+  // Open — load if needed
+  body.style.display = 'block';
+  if (chev) chev.textContent = '▲';
+  body.innerHTML = '<div style="padding:1rem;text-align:center;color:var(--muted);font-size:0.78rem">Loading cards…</div>';
+
+  if (!ankiDataLoaded) await loadAnkiData();
+
+  const cards = ankiCardIndex?.[String(questionId)] || [];
+  if (!cards.length) {
+    body.innerHTML = `<div style="padding:0.75rem;text-align:center;color:var(--muted);font-size:0.78rem">No Anki cards found for ID ${questionId}</div>`;
+    return;
+  }
+
+  const FIELDS = [
+    { key: 'text',                label: 'Text',                 cls: ''          },
+    { key: 'extra',               label: 'Extra',                cls: 'extra'     },
+    { key: 'lectureNotes',        label: 'Lecture Notes',        cls: 'lecture'   },
+    { key: 'additionalResources', label: 'Additional Resources', cls: 'resources' },
+  ];
+
+  body.innerHTML = cards.map((card, idx) => {
+    const fields = FIELDS.map(f => {
+      const val = card[f.key];
+      if (!val || !val.trim()) return '';
+      const fid = `maf-${idx}-${f.key}`;
+      return `<div class="anki-field">
+        <div class="anki-field-header" onclick="toggleAnkiField('${fid}')">
+          <span class="anki-field-label ${f.cls}">${f.label}</span>
+          <span class="anki-field-chevron open" id="${fid}-chev">▼</span>
+        </div>
+        <div class="anki-field-body open" id="${fid}">${val}</div>
+      </div>`;
+    }).join('');
+    if (!fields.trim()) return '';
+    return `<div class="anki-card-item" style="margin-bottom:0.6rem">
+      ${cards.length > 1 ? `<div class="anki-card-num">CARD ${idx+1} / ${cards.length}</div>` : ''}
+      ${fields}
+    </div>`;
+  }).filter(Boolean).join('');
+}
+
+function toggleAnkiField(id) {
+  const body = document.getElementById(id);
+  const chev = document.getElementById(id + '-chev');
+  if (!body) return;
+  const isOpen = body.classList.toggle('open');
+  if (chev) chev.classList.toggle('open', isOpen);
+}
 function updateGlobalProgress() {
   const dc = Object.keys(done).length;
   const pct = TOTAL_Q ? Math.round(dc/TOTAL_Q*100) : 0;
@@ -2882,11 +3402,16 @@ function renderHomeStats() {
       const count = Object.values(flags).filter(v => v === lvl).length;
       if (!count) return;
       const mc = LEVEL_COLORS_C[lvl];
+      const savedRev = lastSessions?.review;
+      const hasActive = savedRev?.lvl === lvl && savedRev?.list?.length && savedRev.pos < savedRev.originalCount;
+      const progressText = hasActive
+        ? `${savedRev.pos}/${savedRev.originalCount} reviewed · Resume`
+        : `${count} question${count!==1?'s':''}`;
       html += `<div class="continue-item" onclick="homeGoToReview(${lvl})" style="--mc:${mc}">
         <div class="continue-dot" style="background:${mc}"></div>
         <div class="continue-info">
           <div class="continue-name">Level ${lvl} — ${LEVEL_LABELS_C[lvl]}</div>
-          <div class="continue-sub">${count} question${count!==1?'s':''}</div>
+          <div class="continue-sub">${progressText}</div>
         </div>
         <div class="continue-arrow">›</div>
       </div>`;
@@ -2904,7 +3429,12 @@ function homeGoTo(si) {
 function homeGoToReview(lvl) {
   hideHome();
   switchTab('review');
-  startReviewMode(lvl);
+  const saved = loadLastSession()?.review;
+  if (saved?.lvl === lvl && saved?.list?.length) {
+    resumeReviewSession(saved);
+  } else {
+    startReviewMode(lvl);
+  }
 }
 
 function showHome() {
@@ -3093,11 +3623,16 @@ function renderMobileHome() {
         const count = Object.values(flags).filter(v => v === lvl).length;
         if (!count) return;
         const mc = LEVEL_COLORS_M[lvl];
+        const savedRev = loadLastSession()?.review;
+        const hasActive = savedRev?.lvl === lvl && savedRev?.list?.length && savedRev.pos < savedRev.originalCount;
+        const progressText = hasActive
+          ? `${savedRev.pos}/${savedRev.originalCount} reviewed · Resume`
+          : `${count} question${count!==1?'s':''}`;
         html += `<div class="mh-continue-item" onclick="mobileGoToReview(${lvl})" style="--mc:${mc}">
           <div class="mh-continue-dot" style="background:${mc}"></div>
           <div class="mh-continue-info">
             <div class="mh-continue-name">Level ${lvl} — ${LEVEL_LABELS_M[lvl]}</div>
-            <div class="mh-continue-sub">${count} question${count!==1?'s':''}</div>
+            <div class="mh-continue-sub">${progressText}</div>
           </div>
           <div class="mh-continue-arrow">›</div>
         </div>`;
@@ -3117,7 +3652,12 @@ function mobileGoToReview(lvl) {
   const nav = document.querySelector('.mobile-nav');
   if (nav) nav.style.display = 'flex';
   mobileTab = 'sections';
-  startReviewMode(lvl);
+  const saved = loadLastSession()?.review;
+  if (saved?.lvl === lvl && saved?.list?.length) {
+    resumeReviewSession(saved);
+  } else {
+    startReviewMode(lvl);
+  }
 }
 
 function updateMobileFlagBadge() {
@@ -3161,7 +3701,33 @@ function showForgot() {
   document.getElementById('auth-subtitle').textContent = "We'll send you a reset link";
   clearAuthMessages();
 }
-function showLoginScreen() { showAuthScreen(); showLogin(); }
+function showLoginScreen() { showAuthScreen(); showLogin(); spawnAuthParticles(); }
+
+function spawnAuthParticles() {
+  const container = document.getElementById('auth-particles');
+  if (!container || container.children.length > 0) return;
+  const colors = ['rgba(79,156,249,', 'rgba(62,207,142,', 'rgba(167,139,250,'];
+  const style = document.createElement('style');
+  style.textContent = `@keyframes authParticleFloat {
+    0%{transform:translateY(0) translateX(0);opacity:0}
+    10%{opacity:1} 90%{opacity:0.4}
+    100%{transform:translateY(-100vh) translateX(var(--dx));opacity:0}
+  }`;
+  document.head.appendChild(style);
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('div');
+    const size = Math.random() * 2.5 + 1;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const opacity = Math.random() * 0.25 + 0.05;
+    const dur = Math.random() * 18 + 14;
+    const delay = Math.random() * -20;
+    const dx = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 60 + 10);
+    p.style.cssText = `position:absolute;border-radius:50%;width:${size}px;height:${size}px;
+      background:${color}${opacity});left:${Math.random()*100}vw;bottom:-10px;
+      --dx:${dx}px;animation:authParticleFloat ${dur}s ${delay}s linear infinite;`;
+    container.appendChild(p);
+  }
+}
 function setAuthError(msg) {
   const el = document.getElementById('auth-error');
   el.textContent = msg; el.style.display = '';
