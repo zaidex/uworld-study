@@ -1461,13 +1461,17 @@ async function syncToCloud() {
 }
 
 async function loadFromCloud() {
-  if (!authSession) return;
+  if (!authSession) { console.log('loadFromCloud: no session'); return; }
   setSyncStatus('syncing');
   try {
-    // RLS ensures we only get our own row — no need to filter by ID in URL
-    let res = await fetch(`${SUPABASE_URL}/rest/v1/progress?select=done,flags,notes,images,daily_counts,highlights&order=updated_at.desc&limit=1`, { headers: getHeaders() });
-    if (!res.ok) throw new Error(await res.text());
-    const rows = await res.json();
+    console.log('loadFromCloud: fetching with token', authSession.access_token?.slice(0,20));
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?select=done,flags,notes,images,daily_counts,highlights&order=updated_at.desc&limit=1`, { headers: getHeaders() });
+    console.log('loadFromCloud: status', res.status);
+    const text = await res.text();
+    console.log('loadFromCloud: response', text.slice(0, 300));
+    if (!res.ok) throw new Error(text);
+    const rows = JSON.parse(text);
+    console.log('loadFromCloud: rows count', rows.length);
     if (rows.length > 0) {
       done   = rows[0].done   || {};
       flags  = rows[0].flags  || {};
@@ -1490,6 +1494,7 @@ async function loadFromCloud() {
         localStorage.setItem(IMAGES_KEY,  JSON.stringify(images));
         localStorage.setItem(HIGHLIGHTS_KEY, JSON.stringify(highlights));
       } catch(e) {}
+      console.log('loadFromCloud: done keys loaded', Object.keys(done).length);
     }
     setSyncStatus('synced');
   } catch(e) {
