@@ -1441,15 +1441,14 @@ async function syncToCloud() {
     const uid = getUserId();
     const body = {
       auth_user_id: uid,
-      user_id: uid,
       done, flags, notes, images,
       daily_counts: getDailyCounts(),
       highlights,
       updated_at: new Date().toISOString()
     };
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress`, {
-      method: 'POST',
-      headers: { ...getHeaders(), 'Prefer': 'resolution=merge-duplicates' },
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?auth_user_id=eq.${uid}`, {
+      method: 'PATCH',
+      headers: getHeaders(),
       body: JSON.stringify(body)
     });
     if (!res.ok) throw new Error(await res.text());
