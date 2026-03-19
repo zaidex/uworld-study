@@ -1583,22 +1583,6 @@ async function signIn(email, password) {
 }
 
 async function signUp(email, password) {
-  // ── WHITELIST CHECK ───────────────────────────────────────────────────────
-  // Only emails you've added to the allowed_emails table in Supabase can register
-  let wlRes, wlData;
-  try {
-    wlRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/allowed_emails?select=email&email=eq.${encodeURIComponent(email.toLowerCase())}`,
-      { headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' } }
-    );
-    wlData = await wlRes.json();
-  } catch(e) {
-    throw new Error('Network error — could not verify registration eligibility.');
-  }
-  if (!Array.isArray(wlData) || wlData.length === 0) {
-    throw new Error('This email is not approved for registration. Please contact the administrator.');
-  }
-  // ── PROCEED WITH SIGNUP ───────────────────────────────────────────────────
   let res, data;
   try {
     res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
@@ -1614,7 +1598,6 @@ async function signUp(email, password) {
   if (data.access_token) {
     saveSession({ access_token: data.access_token, refresh_token: data.refresh_token, user: data.user });
   } else if (data.id) {
-    // Account created but email confirmation required
     throw new Error('Account created! Check your email to confirm, then sign in.');
   } else {
     throw new Error('Unexpected response: ' + JSON.stringify(data));
