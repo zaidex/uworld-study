@@ -1553,18 +1553,20 @@ async function refreshSession() {
 async function signIn(email, password) {
   // ── WHITELIST CHECK ───────────────────────────────────────────────────────
   // User must be in the allowed_emails table to log in
-  let wlRes, wlData;
   try {
-    wlRes = await fetch(
+    const wlRes = await fetch(
       `${SUPABASE_URL}/rest/v1/allowed_emails?select=email&email=eq.${encodeURIComponent(email.toLowerCase())}`,
       { headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' } }
     );
-    wlData = await wlRes.json();
+    if (!wlRes.ok) throw new Error('check failed');
+    const wlData = await wlRes.json();
+    if (!Array.isArray(wlData) || wlData.length === 0) {
+      throw new Error('Your account has not been approved yet. Please contact the administrator.');
+    }
   } catch(e) {
-    throw new Error('Network error — could not verify access.');
-  }
-  if (!Array.isArray(wlData) || wlData.length === 0) {
-    throw new Error('Your account has not been approved yet. Please contact the administrator.');
+    // Re-throw our own error messages; treat any other error as blocked
+    if (e.message.includes('approved') || e.message.includes('administrator')) throw e;
+    throw new Error('Could not verify access. Please try again or contact the administrator.');
   }
   // ── PROCEED WITH LOGIN ────────────────────────────────────────────────────
   let res, data;
@@ -1592,16 +1594,11 @@ async function signUp(email, password) {
     });
     data = await res.json();
   } catch(e) {
-    throw new Error('Network error — check your internet connection. If on GitHub Pages, make sure your site URL is added in Supabase → Authentication → Settings → Site URL.');
+    throw new Error('Network error — check your internet connection.');
   }
   if (!res.ok) throw new Error(data.error_description || data.message || data.msg || JSON.stringify(data));
-  if (data.access_token) {
-    saveSession({ access_token: data.access_token, refresh_token: data.refresh_token, user: data.user });
-  } else if (data.id) {
-    throw new Error('Account created! Check your email to confirm, then sign in.');
-  } else {
-    throw new Error('Unexpected response: ' + JSON.stringify(data));
-  }
+  // Never auto-login — always return to login page after signup
+  return 'success';
 }
 
 async function signOut() {
@@ -1716,8 +1713,9 @@ async function loadFromCloud() {
   if (!authSession) { console.log('loadFromCloud: no session'); return; }
   setSyncStatus('syncing');
   try {
-    console.log('loadFromCloud: fetching with token', authSession.access_token?.slice(0,20));
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?select=done,flags,notes,images,daily_counts,highlights&order=updated_at.desc&limit=1`, { headers: getHeaders() });
+    const uid = getUserId();
+    console.log('loadFromCloud: fetching for uid', uid);
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?auth_user_id=eq.${uid}&select=done,flags,notes,images,daily_counts,highlights&order=updated_at.desc&limit=1`, { headers: getHeaders() });
     console.log('loadFromCloud: status', res.status);
     const text = await res.text();
     console.log('loadFromCloud: response', text.slice(0, 300));
@@ -1747,6 +1745,14 @@ async function loadFromCloud() {
         localStorage.setItem(HIGHLIGHTS_KEY, JSON.stringify(highlights));
       } catch(e) {}
       console.log('loadFromCloud: done keys loaded', Object.keys(done).length);
+    } else {
+      // New account — clear any leftover local progress from a previous user
+      done = {}; flags = {}; notes = {}; images = {}; highlights = {}; reviewDone = {};
+      try {
+        localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(FLAGS_KEY);
+        localStorage.removeItem(NOTES_KEY);   localStorage.removeItem(IMAGES_KEY);
+        localStorage.removeItem(HIGHLIGHTS_KEY); localStorage.removeItem(REVIEW_DONE_KEY);
+      } catch(e) {}
     }
     setSyncStatus('synced');
   } catch(e) {
@@ -3916,7 +3922,9 @@ async function handleSignup() {
   clearAuthMessages();
   try {
     await signUp(email, password);
-    await launchApp();
+    // Go back to login and show success message
+    showLogin();
+    setAuthSuccess('Account created successfully! You can now sign in once approved.');
   } catch(e) {
     setAuthError(e.message);
     setAuthLoading('signup-btn', false);
@@ -3950,8 +3958,14 @@ async function launchApp() {
   if (logoutBtn) { logoutBtn.style.display = ''; }
   if (logoutEmail && authSession?.user?.email) logoutEmail.textContent = authSession.user.email;
 
-  // Load local data first for instant render
-  loadProgress();
+  // Clear any locally cached progress — cloud data for THIS user will load below
+  done = {}; flags = {}; notes = {}; images = {}; highlights = {}; reviewDone = {};
+  try {
+    localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(FLAGS_KEY);
+    localStorage.removeItem(NOTES_KEY);   localStorage.removeItem(IMAGES_KEY);
+    localStorage.removeItem(HIGHLIGHTS_KEY); localStorage.removeItem(REVIEW_DONE_KEY);
+  } catch(e) {}
+
   migrateFlagsToLevels();
   loadFontSize();
   updateGlobalProgress();
@@ -3969,7 +3983,7 @@ async function launchApp() {
   checkAnki();
   if (location.protocol !== 'https:') setInterval(checkAnki, 15000);
 
-  // Then load from cloud (overwrites with latest)
+  // Load this user's progress from cloud
   await loadFromCloud();
   updateGlobalProgress();
   updateFlagBadge();
