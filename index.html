@@ -794,7 +794,8 @@ body { font-family: 'IBM Plex Sans', sans-serif; background: var(--bg); color: v
   font-size: 11px; text-anchor: middle; dominant-baseline: middle;
   fill: var(--text); font-weight: 600;
 }
-.continue-item {
+.cont-block-label { font-size: 0.62rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.4rem; }
+.cont-empty { font-size: 0.75rem; color: var(--muted); padding: 0.3rem 0 0.5rem; }
   display: flex; align-items: center; gap: 0.75rem;
   padding: 0.7rem 0.85rem;
   background: var(--surface2); border: 1px solid var(--border);
@@ -1395,10 +1396,15 @@ let syncTimer = null;
 let isSyncing = false;
 
 function saveLastSession(type, si, lvl) {
-  try { localStorage.setItem(LAST_SESSION_KEY, JSON.stringify({ type, si, lvl: lvl||null, ts: Date.now() })); } catch(e) {}
+  try {
+    const all = JSON.parse(localStorage.getItem(LAST_SESSION_KEY) || '{}');
+    if (type === 'study') all.study = { si, ts: Date.now() };
+    if (type === 'review') all.review = { lvl, ts: Date.now() };
+    localStorage.setItem(LAST_SESSION_KEY, JSON.stringify(all));
+  } catch(e) {}
 }
 function loadLastSession() {
-  try { const r = localStorage.getItem(LAST_SESSION_KEY); return r ? JSON.parse(r) : null; } catch(e) { return null; }
+  try { const r = localStorage.getItem(LAST_SESSION_KEY); return r ? JSON.parse(r) : {}; } catch(e) { return {}; }
 }
 
 function getUserId() {
@@ -2832,48 +2838,28 @@ function renderHomeStats() {
     });
   });
 
-  // Continue list
-  const lastSession = loadLastSession();
+  // Continue list — two separate blocks: Studying + Review
+  const lastSessions = loadLastSession();
   const contList = document.getElementById('home-continue-list');
+  const LEVEL_COLORS_C = ['','#60a5fa','#fb923c','#a78bfa'];
+  const LEVEL_LABELS_C = ['','Review once','Review often','Master later'];
 
-  // Build continue items — last session first, then in-progress sections
   const inProgress = ALL_SUBSECS.map((s, si) => {
     const tot2 = s.questions.length;
     const dn2 = doneCountForSubsec(si);
     return { si, s, tot: tot2, dn: dn2, pct: tot2 ? Math.round(dn2/tot2*100) : 0 };
   }).filter(x => x.dn > 0 && x.dn < x.tot)
     .sort((a,b) => b.pct - a.pct)
-    .slice(0, 4);
+    .slice(0, 3);
 
-  if (lastSession?.type === 'review') {
-    const lvl = lastSession.lvl;
-    const LEVEL_LABELS = ['','Review once','Review often','Master later'];
-    const LEVEL_COLORS = ['','#60a5fa','#fb923c','#a78bfa'];
-    const count = Object.values(flags).filter(v => v === lvl).length;
-    const resumeItem = `<div class="continue-item" onclick="homeGoToReview(${lvl})" style="--mc:${LEVEL_COLORS[lvl]}">
-      <div class="continue-dot" style="background:${LEVEL_COLORS[lvl]}"></div>
-      <div class="continue-info">
-        <div class="continue-name">Level ${lvl} Review</div>
-        <div class="continue-sub">${LEVEL_LABELS[lvl]} · ${count} questions</div>
-      </div>
-      <div class="continue-arrow">›</div>
-    </div>`;
-    const studyItems = inProgress.map(({ si, s, tot, dn, pct: p2 }) => {
-      const { mc } = getMajorColor(s.mainKey);
-      return `<div class="continue-item" onclick="homeGoTo(${si})" style="--mc:${mc}">
-        <div class="continue-dot" style="background:${mc}"></div>
-        <div class="continue-info">
-          <div class="continue-name">${s.subsecKey}</div>
-          <div class="continue-sub">${s.mainKey} · ${dn}/${tot} · ${p2}%</div>
-        </div>
-        <div class="continue-arrow">›</div>
-      </div>`;
-    }).join('');
-    contList.innerHTML = resumeItem + studyItems || '<div style="font-size:0.78rem;color:var(--muted);text-align:center;padding:1rem 0">No in-progress sections yet</div>';
-  } else if (inProgress.length === 0) {
-    contList.innerHTML = '<div style="font-size:0.78rem;color:var(--muted);text-align:center;padding:1rem 0">No in-progress sections yet</div>';
+  let html = '';
+
+  // ── Studying block ──
+  html += `<div class="cont-block-label">Studying</div>`;
+  if (inProgress.length === 0) {
+    html += `<div class="cont-empty">No in-progress sections yet</div>`;
   } else {
-    contList.innerHTML = inProgress.map(({ si, s, tot, dn, pct: p2 }) => {
+    html += inProgress.map(({ si, s, tot, dn, pct: p2 }) => {
       const { mc } = getMajorColor(s.mainKey);
       return `<div class="continue-item" onclick="homeGoTo(${si})" style="--mc:${mc}">
         <div class="continue-dot" style="background:${mc}"></div>
@@ -2885,6 +2871,29 @@ function renderHomeStats() {
       </div>`;
     }).join('');
   }
+
+  // ── Review block ──
+  html += `<div class="cont-block-label" style="margin-top:1rem">Review</div>`;
+  const hasReviewLevels = [1,2,3].some(l => Object.values(flags).includes(l));
+  if (!hasReviewLevels) {
+    html += `<div class="cont-empty">No questions in review yet</div>`;
+  } else {
+    [1,2,3].forEach(lvl => {
+      const count = Object.values(flags).filter(v => v === lvl).length;
+      if (!count) return;
+      const mc = LEVEL_COLORS_C[lvl];
+      html += `<div class="continue-item" onclick="homeGoToReview(${lvl})" style="--mc:${mc}">
+        <div class="continue-dot" style="background:${mc}"></div>
+        <div class="continue-info">
+          <div class="continue-name">Level ${lvl} — ${LEVEL_LABELS_C[lvl]}</div>
+          <div class="continue-sub">${count} question${count!==1?'s':''}</div>
+        </div>
+        <div class="continue-arrow">›</div>
+      </div>`;
+    });
+  }
+
+  contList.innerHTML = html;
 }
 
 function homeGoTo(si) {
@@ -3040,10 +3049,9 @@ function renderMobileHome() {
     });
   }
 
-  // Continue list
+  // Continue list — two blocks: Studying + Review
   const contList = document.getElementById('mh-continue-list');
   if (contList) {
-    const lastSess = loadLastSession();
     const LEVEL_COLORS_M = ['','#60a5fa','#fb923c','#a78bfa'];
     const LEVEL_LABELS_M = ['','Review once','Review often','Master later'];
 
@@ -3057,25 +3065,12 @@ function renderMobileHome() {
 
     let html = '';
 
-    // Show last review session at top if applicable
-    if (lastSess?.type === 'review') {
-      const lvl = lastSess.lvl;
-      const count = Object.values(flags).filter(v => v === lvl).length;
-      const mc = LEVEL_COLORS_M[lvl];
-      html += `<div class="mh-continue-item" onclick="mobileGoToReview(${lvl})" style="--mc:${mc}">
-        <div class="mh-continue-dot" style="background:${mc}"></div>
-        <div class="mh-continue-info">
-          <div class="mh-continue-name">Level ${lvl} Review</div>
-          <div class="mh-continue-sub">${LEVEL_LABELS_M[lvl]} · ${count} questions</div>
-        </div>
-        <div class="mh-continue-arrow">›</div>
-      </div>`;
-    }
-
-    if (inProgressM.length === 0 && !html) {
-      contList.innerHTML = '<div class="mh-no-activity">No recent activity yet</div>';
+    // Studying block
+    html += `<div class="mh-section-label" style="margin-bottom:0.4rem;font-size:0.65rem">STUDYING</div>`;
+    if (inProgressM.length === 0) {
+      html += `<div class="mh-no-activity" style="margin-bottom:0.75rem">No in-progress sections yet</div>`;
     } else {
-      html += inProgressM.slice(0, lastSess?.type === 'review' ? 3 : 4).map(({ si, s, doneC, total }) => {
+      html += inProgressM.slice(0, 3).map(({ si, s, doneC, total }) => {
         const { mc } = getMajorColor(s.mainKey);
         return `<div class="mh-continue-item" onclick="mobileNav('sections');setTimeout(()=>openSubsec(${si}),50)" style="--mc:${mc}">
           <div class="mh-continue-dot"></div>
@@ -3086,8 +3081,30 @@ function renderMobileHome() {
           <div class="mh-continue-arrow">›</div>
         </div>`;
       }).join('');
-      contList.innerHTML = html;
     }
+
+    // Review block
+    html += `<div class="mh-section-label" style="margin-top:0.9rem;margin-bottom:0.4rem;font-size:0.65rem">REVIEW</div>`;
+    const hasReview = [1,2,3].some(l => Object.values(flags).includes(l));
+    if (!hasReview) {
+      html += `<div class="mh-no-activity">No questions in review yet</div>`;
+    } else {
+      [1,2,3].forEach(lvl => {
+        const count = Object.values(flags).filter(v => v === lvl).length;
+        if (!count) return;
+        const mc = LEVEL_COLORS_M[lvl];
+        html += `<div class="mh-continue-item" onclick="mobileGoToReview(${lvl})" style="--mc:${mc}">
+          <div class="mh-continue-dot" style="background:${mc}"></div>
+          <div class="mh-continue-info">
+            <div class="mh-continue-name">Level ${lvl} — ${LEVEL_LABELS_M[lvl]}</div>
+            <div class="mh-continue-sub">${count} question${count!==1?'s':''}</div>
+          </div>
+          <div class="mh-continue-arrow">›</div>
+        </div>`;
+      });
+    }
+
+    contList.innerHTML = html;
   }
 }
 
