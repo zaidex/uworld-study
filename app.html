@@ -1648,6 +1648,7 @@ async function syncToCloud() {
   try {
     const uid = getUserId();
     const body = {
+      user_id: uid,
       auth_user_id: uid,
       done, flags, notes, images,
       daily_counts: getDailyCounts(),
