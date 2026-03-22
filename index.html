@@ -1,26 +1,313 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Site is down for maintenance</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <style type="text/css">
-            body { text-align: center; padding: 10%; font: 20px Helvetica, sans-serif; color: #333; }
-            h1 { font-size: 50px; margin: 0; }
-            article { display: block; text-align: left; max-width: 650px; margin: 0 auto; }
-            a { color: #dc8100; text-decoration: none; }
-            a:hover { color: #333; text-decoration: none; }
-            @media only screen and (max-width : 480px) {
-                h1 { font-size: 40px; }
-            }
-        </style>
-    </head>
-    <body>
-        <article>
-            <h1>Site is temporarily unavailable.</h1>
-            <p>Scheduled maintenance is currently in progress. Please check back soon.</p>
-            <p>We apologize for any inconvenience.</p>
-            <p id="signature">&mdash; <a href="mailto:[Email]">[Name]</a></p>
-        </article>
-    </body>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ZWorld - Medical Study System</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230d0f14'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%234f9cf9' stroke-width='1.5' stroke-dasharray='4 6' opacity='0.5'/%3E%3Crect x='20' y='21' width='24' height='5' rx='1.5' fill='%23e2e8f0'/%3E%3Cpolygon points='44,26 20,42 20,37 44,21' fill='%234f9cf9'/%3E%3Crect x='20' y='38' width='24' height='5' rx='1.5' fill='%233ecf8e'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'IBM Plex Sans',sans-serif;background:#0d0f14;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;overflow:hidden}
+.auth-bg-grid{position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(79,156,249,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(79,156,249,0.04) 1px,transparent 1px);background-size:40px 40px;animation:authGridShift 20s linear infinite}
+@keyframes authGridShift{0%{background-position:0 0}100%{background-position:40px 40px}}
+.auth-scan{position:fixed;inset:0;pointer-events:none;background:linear-gradient(180deg,transparent 0%,rgba(79,156,249,0.018) 50%,transparent 100%);background-size:100% 200px;animation:authScan 6s linear infinite}
+@keyframes authScan{0%{background-position:0 -200px}100%{background-position:0 100vh}}
+.auth-orb{position:fixed;border-radius:50%;pointer-events:none;filter:blur(80px);animation:authOrbFloat 8s ease-in-out infinite}
+.auth-orb-1{width:380px;height:380px;background:rgba(79,156,249,0.07);top:-100px;left:-100px;animation-delay:0s}
+.auth-orb-2{width:280px;height:280px;background:rgba(62,207,142,0.06);bottom:-80px;right:-80px;animation-delay:-4s}
+.auth-orb-3{width:180px;height:180px;background:rgba(167,139,250,0.05);top:40%;right:20%;animation-delay:-2s}
+@keyframes authOrbFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(15px,-15px)}}
+.auth-particles{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.auth-card{position:relative;z-index:10;background:rgba(20,23,32,0.92);border:1px solid rgba(79,156,249,0.15);border-radius:20px;padding:2.5rem 2rem;width:100%;max-width:380px;backdrop-filter:blur(20px);box-shadow:0 0 0 1px rgba(79,156,249,0.05),0 32px 64px rgba(0,0,0,0.5);animation:authCardIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards}
+@keyframes authCardIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.auth-card::before{content:'';position:absolute;top:-1px;left:-1px;width:14px;height:14px;border-top:2px solid #4f9cf9;border-left:2px solid #4f9cf9;border-radius:4px 0 0 0}
+.auth-card::after{content:'';position:absolute;bottom:-1px;right:-1px;width:14px;height:14px;border-bottom:2px solid #3ecf8e;border-right:2px solid #3ecf8e;border-radius:0 0 4px 0}
+.auth-logo{text-align:center;margin-bottom:1.8rem;animation:authFadeUp 0.6s ease 0.1s both}
+.auth-logo-text{font-family:'IBM Plex Mono',monospace;font-size:2.8rem;font-weight:700;line-height:1;letter-spacing:-0.02em}
+.auth-logo-z{color:#4f9cf9;display:inline-block;animation:authZPulse 3s ease-in-out infinite}
+@keyframes authZPulse{0%,100%{text-shadow:0 0 20px rgba(79,156,249,0.3)}50%{text-shadow:0 0 40px rgba(79,156,249,0.7),0 0 80px rgba(79,156,249,0.2)}}
+.auth-logo-w{color:#f1f5f9;display:inline-block}
+.auth-logo-orld{color:#334155;font-weight:300}
+.auth-logo-bar{width:0;height:2px;margin:0.5rem auto 0;background:linear-gradient(90deg,#4f9cf9,#3ecf8e,transparent);border-radius:99px;animation:authBarGrow 0.8s cubic-bezier(0.16,1,0.3,1) 0.4s forwards}
+@keyframes authBarGrow{to{width:80px}}
+.auth-logo-tag{font-family:'IBM Plex Mono',monospace;font-size:0.58rem;color:#334155;letter-spacing:0.22em;margin-top:0.55rem;animation:authFadeUp 0.6s ease 0.5s both}
+@keyframes authFadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.auth-title{font-size:1rem;font-weight:500;color:#94a3b8;text-align:center;margin-bottom:1.5rem;animation:authFadeUp 0.6s ease 0.4s both}
+.auth-input{display:block;width:100%;box-sizing:border-box;padding:0.72rem 0.9rem;margin-bottom:0.75rem;background:rgba(28,32,48,0.8);border:1px solid #252a3a;border-radius:8px;color:#e2e8f0;font-size:1rem;font-family:'IBM Plex Sans',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;animation:authFadeUp 0.6s ease 0.5s both}
+.auth-input:focus{border-color:#4f9cf9;box-shadow:0 0 0 3px rgba(79,156,249,0.1)}
+.auth-input::placeholder{color:#334155}
+.auth-btn{display:block;width:100%;padding:0.78rem;margin-top:0.25rem;background:linear-gradient(135deg,#4f9cf9,#3b82f6);color:#fff;border:none;border-radius:8px;font-size:0.92rem;font-family:'IBM Plex Sans',sans-serif;font-weight:600;cursor:pointer;transition:opacity 0.15s,transform 0.15s;animation:authFadeUp 0.6s ease 0.6s both}
+.auth-btn:hover{opacity:0.88;transform:translateY(-1px)}
+.auth-btn:active{transform:translateY(0)}
+.auth-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.auth-links{display:flex;justify-content:space-between;margin-top:1rem;flex-wrap:wrap;gap:0.5rem;animation:authFadeUp 0.6s ease 0.7s both}
+.auth-link{background:none;border:none;color:#334155;font-size:0.78rem;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;padding:0;transition:color 0.15s}
+.auth-link:hover{color:#4f9cf9}
+.auth-error{background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);color:#f87171;border-radius:7px;padding:0.6rem 0.85rem;font-size:0.8rem;margin-bottom:1rem}
+.auth-success{background:rgba(62,207,142,0.1);border:1px solid rgba(62,207,142,0.3);color:#3ecf8e;border-radius:7px;padding:0.6rem 0.85rem;font-size:0.8rem;margin-bottom:1rem}
+@media(max-width:680px){
+  body{align-items:center}
+  .auth-card{padding:1.75rem 1.4rem;border-radius:18px;max-width:360px}
+  .auth-logo-text{font-size:2.2rem}
+  .auth-logo{margin-bottom:1.2rem}
+  .auth-title{margin-bottom:1rem}
+}
+</style>
+</head>
+<body>
+<div class="auth-bg-grid"></div>
+<div class="auth-scan"></div>
+<div class="auth-orb auth-orb-1"></div>
+<div class="auth-orb auth-orb-2"></div>
+<div class="auth-orb auth-orb-3"></div>
+<div class="auth-particles" id="auth-particles"></div>
+
+<div class="auth-card">
+  <div class="auth-logo">
+    <div class="auth-logo-text">
+      <span class="auth-logo-z">Z</span><span class="auth-logo-w">W</span><span class="auth-logo-orld">orld</span>
+    </div>
+    <div class="auth-logo-bar"></div>
+    <div class="auth-logo-tag">MEDICAL STUDY SYSTEM</div>
+  </div>
+
+  <div class="auth-title" id="auth-title">Sign in to continue</div>
+
+  <div id="auth-error" class="auth-error" style="display:none"></div>
+  <div id="auth-success" class="auth-success" style="display:none"></div>
+
+  <!-- LOGIN FORM -->
+  <div id="auth-form-login">
+    <input class="auth-input" id="login-email" type="email" placeholder="Email" autocomplete="email">
+    <input class="auth-input" id="login-password" type="password" placeholder="Password" autocomplete="current-password">
+    <button class="auth-btn" id="login-btn" onclick="handleLogin()">Sign In</button>
+    <div class="auth-links">
+      <button class="auth-link" onclick="showForgot()">Forgot password?</button>
+      <button class="auth-link" onclick="showSignup()">Create account</button>
+    </div>
+  </div>
+
+  <!-- SIGNUP FORM -->
+  <div id="auth-form-signup" style="display:none">
+    <input class="auth-input" id="signup-email" type="email" placeholder="Email" autocomplete="email">
+    <input class="auth-input" id="signup-password" type="password" placeholder="Password (min 6 chars)" autocomplete="new-password">
+    <input class="auth-input" id="signup-confirm" type="password" placeholder="Confirm password" autocomplete="new-password">
+    <button class="auth-btn" id="signup-btn" onclick="handleSignup()">Create Account</button>
+    <div class="auth-links">
+      <button class="auth-link" onclick="showLogin()">Already have an account?</button>
+    </div>
+  </div>
+
+  <!-- FORGOT FORM -->
+  <div id="auth-form-forgot" style="display:none">
+    <input class="auth-input" id="forgot-email" type="email" placeholder="Your email">
+    <button class="auth-btn" onclick="handleForgot()">Send Reset Link</button>
+    <div class="auth-links">
+      <button class="auth-link" onclick="showLogin()">Back to sign in</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://zntsdupdisvudbotnqwb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpudHNkdXBkaXN2dWRib3RucXdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyOTgzOTMsImV4cCI6MjA4ODg3NDM5M30.78AB6Zmc6iz60TDBwlIzh0ZyOat4rn30_9o1N0Ly7tU';
+const AUTH_SESSION_KEY = 'uworld_auth_session';
+const COOKIE_NAME = 'zworld_token';
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+
+// ── SESSION COOKIE ────────────────────────────────────────────────────────────
+function setAuthCookie(token) {
+  // SameSite=Strict, Secure (works on https://), 7-day expiry
+  document.cookie = `${COOKIE_NAME}=${token}; Max-Age=${COOKIE_MAX_AGE}; Path=/; SameSite=Strict; Secure`;
+}
+function clearAuthCookie() {
+  document.cookie = `${COOKIE_NAME}=; Max-Age=0; Path=/; SameSite=Strict; Secure`;
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────────
+function showLogin() {
+  document.getElementById('auth-form-login').style.display = '';
+  document.getElementById('auth-form-signup').style.display = 'none';
+  document.getElementById('auth-form-forgot').style.display = 'none';
+  document.getElementById('auth-title').textContent = 'Sign in to continue';
+  clearAuthMessages();
+}
+function showSignup() {
+  document.getElementById('auth-form-login').style.display = 'none';
+  document.getElementById('auth-form-signup').style.display = '';
+  document.getElementById('auth-form-forgot').style.display = 'none';
+  document.getElementById('auth-title').textContent = 'Create account';
+  clearAuthMessages();
+}
+function showForgot() {
+  document.getElementById('auth-form-login').style.display = 'none';
+  document.getElementById('auth-form-signup').style.display = 'none';
+  document.getElementById('auth-form-forgot').style.display = '';
+  document.getElementById('auth-title').textContent = 'Reset password';
+  clearAuthMessages();
+}
+function setAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg; el.style.display = '';
+  document.getElementById('auth-success').style.display = 'none';
+}
+function setAuthSuccess(msg) {
+  const el = document.getElementById('auth-success');
+  el.textContent = msg; el.style.display = '';
+  document.getElementById('auth-error').style.display = 'none';
+}
+function clearAuthMessages() {
+  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('auth-success').style.display = 'none';
+}
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  if (btn) btn.disabled = loading;
+}
+
+// ── AUTH HANDLERS ─────────────────────────────────────────────────────────────
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!email || !password) { setAuthError('Please enter email and password.'); return; }
+  setLoading('login-btn', true);
+  clearAuthMessages();
+  try {
+    // Whitelist check
+    const wlRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/allowed_emails?select=email&email=eq.${encodeURIComponent(email.toLowerCase())}`,
+      { headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' } }
+    );
+    if (!wlRes.ok) throw new Error('Could not verify access. Please try again or contact the administrator.');
+    const wlData = await wlRes.json();
+    if (!Array.isArray(wlData) || wlData.length === 0) {
+      throw new Error('Your account has not been approved yet. Please contact the administrator.');
+    }
+    // Sign in
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error_description || data.message || 'Login failed');
+    // Save session to localStorage (app.html reads this too)
+    const session = { access_token: data.access_token, refresh_token: data.refresh_token, user: data.user };
+    try { localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session)); } catch(e) {}
+    // Set cookie so Worker can verify server-side
+    setAuthCookie(data.access_token);
+    // Redirect to the app
+    window.location.href = '/app.html';
+  } catch(e) {
+    setAuthError(e.message);
+    setLoading('login-btn', false);
+  }
+}
+
+async function handleSignup() {
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const confirm = document.getElementById('signup-confirm').value;
+  if (!email || !password) { setAuthError('Please fill all fields.'); return; }
+  if (password.length < 6) { setAuthError('Password must be at least 6 characters.'); return; }
+  if (password !== confirm) { setAuthError('Passwords do not match.'); return; }
+  setLoading('signup-btn', true);
+  clearAuthMessages();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error_description || data.message || JSON.stringify(data));
+    // Invalidate any auto-created session
+    if (data.access_token) {
+      try {
+        await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + data.access_token }
+        });
+      } catch(_) {}
+    }
+    showLogin();
+    setAuthSuccess('Account created! You can sign in once approved.');
+  } catch(e) {
+    setAuthError(e.message);
+    setLoading('signup-btn', false);
+  }
+}
+
+async function handleForgot() {
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) { setAuthError('Please enter your email.'); return; }
+  clearAuthMessages();
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY },
+      body: JSON.stringify({ email })
+    });
+    if (!res.ok) { const d = await res.json(); throw new Error(d.error_description || 'Failed'); }
+    setAuthSuccess('Reset link sent! Check your email.');
+  } catch(e) {
+    setAuthError(e.message);
+  }
+}
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('auth-form-login').style.display !== 'none') handleLogin();
+  else if (document.getElementById('auth-form-signup').style.display !== 'none') handleSignup();
+});
+
+// Show expired message if redirected back after token expiry
+if (new URLSearchParams(location.search).get('expired')) {
+  setAuthError('Your session expired. Please sign in again.');
+}
+
+// If already has a valid session, go straight to app
+try {
+  const s = localStorage.getItem(AUTH_SESSION_KEY);
+  if (s) {
+    const session = JSON.parse(s);
+    if (session?.access_token) {
+      // Quick check: is token still valid?
+      const parts = session.access_token.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+        const now = Math.floor(Date.now() / 1000);
+        if (!payload.exp || payload.exp > now) {
+          setAuthCookie(session.access_token);
+          window.location.href = '/app.html';
+        }
+      }
+    }
+  }
+} catch(_) {}
+
+// Particles
+(function spawnParticles() {
+  const container = document.getElementById('auth-particles');
+  const colors = ['rgba(79,156,249,', 'rgba(62,207,142,', 'rgba(167,139,250,'];
+  const style = document.createElement('style');
+  style.textContent = `@keyframes authParticleFloat{0%{transform:translateY(0) translateX(0);opacity:0}10%{opacity:1}90%{opacity:0.4}100%{transform:translateY(-100vh) translateX(var(--dx));opacity:0}}`;
+  document.head.appendChild(style);
+  for (let i = 0; i < 22; i++) {
+    const p = document.createElement('div');
+    const size = Math.random() * 2.5 + 1;
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const opacity = Math.random() * 0.25 + 0.05;
+    const dur = Math.random() * 18 + 14;
+    const delay = Math.random() * -20;
+    const dx = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * 60 + 10);
+    p.style.cssText = `position:absolute;border-radius:50%;width:${size}px;height:${size}px;background:${color}${opacity});left:${Math.random()*100}vw;bottom:-10px;--dx:${dx}px;animation:authParticleFloat ${dur}s ${delay}s linear infinite;`;
+    container.appendChild(p);
+  }
+})();
+</script>
+</body>
 </html>
