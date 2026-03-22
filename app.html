@@ -509,6 +509,50 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
 .btn-reset-subsec:hover { border-color: var(--danger); color: var(--danger); }
 
 /* ── NOTES & IMAGE PANEL ─────────────────────────────────────────────────────── */
+/* UWORLD PANEL */
+.uworld-panel-box {
+  background: var(--surface2);
+  border: 1px solid rgba(79,156,249,0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+.uworld-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+}
+.uworld-panel-title {
+  font-size: 0.72rem; font-weight: 600; color: var(--accent);
+  display: flex; align-items: center; gap: 0.4rem;
+  font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.05em;
+}
+.uworld-panel-body { padding: 0.85rem 0.9rem; }
+.uworld-stem {
+  font-size: 0.85rem; line-height: 1.65; color: var(--text);
+  margin-bottom: 1rem;
+}
+.uworld-choices { display: flex; flex-direction: column; gap: 0.4rem; }
+.uworld-choice {
+  display: flex; align-items: flex-start; gap: 0.6rem;
+  padding: 0.55rem 0.75rem; border-radius: 7px;
+  border: 1px solid var(--border); background: var(--surface);
+  font-size: 0.8rem; line-height: 1.45;
+}
+.uworld-choice.correct {
+  border-color: var(--green); background: rgba(62,207,142,0.08);
+}
+.uworld-choice-letter {
+  font-family: 'IBM Plex Mono', monospace; font-weight: 700;
+  font-size: 0.75rem; flex-shrink: 0; min-width: 1.1rem; padding-top: 0.05rem;
+}
+.uworld-choice.correct .uworld-choice-letter { color: var(--green); }
+.uworld-empty {
+  color: var(--muted); font-size: 0.78rem; text-align: center; padding: 1.2rem;
+}
+
 .q-notes-panel {
   margin-top: 1rem;
   border: 1px solid var(--border);
@@ -1648,7 +1692,6 @@ async function syncToCloud() {
   try {
     const uid = getUserId();
     const body = {
-      user_id: uid,
       auth_user_id: uid,
       done, flags, notes, images,
       daily_counts: getDailyCounts(),
@@ -1656,10 +1699,9 @@ async function syncToCloud() {
       font_size: fontSizeIdx,
       updated_at: new Date().toISOString()
     };
-    // Use upsert so new users get a row created automatically
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress`, {
-      method: 'POST',
-      headers: { ...getHeaders(), 'Prefer': 'resolution=merge-duplicates' },
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?auth_user_id=eq.${uid}`, {
+      method: 'PATCH',
+      headers: getHeaders(),
       body: JSON.stringify(body)
     });
     if (!res.ok) throw new Error(await res.text());
@@ -2097,6 +2139,20 @@ function renderQuestion() {
         <div class="anki-panel-body" id="anki-panel-body"></div>
       </div>
     </div>
+
+    <!-- UWorld Question Panel -->
+    <div id="uworld-panel-wrap" style="margin-top:1rem;">
+      <div class="uworld-panel-box">
+        <div class="uworld-panel-header" onclick="toggleUWorldPanel()">
+          <div class="uworld-panel-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            UWORLD QUESTION
+          </div>
+          <span id="uworld-panel-chevron" style="font-size:0.7rem;color:var(--muted)">▲</span>
+        </div>
+        <div class="uworld-panel-body" id="uworld-panel-body"></div>
+      </div>
+    </div>
   </div>`;
 
   main.innerHTML = html;
@@ -2106,6 +2162,7 @@ function renderQuestion() {
 
   // Load anki cards — respect whatever open/closed state the user last set
   loadAnkiCards(q.id);
+  loadUWorldQuestion(q.id);
   const bar = document.getElementById('mobile-q-bar');
   const mprev = document.getElementById('mobile-q-prev');
   const mnext = document.getElementById('mobile-q-next');
@@ -2125,6 +2182,71 @@ function renderQuestion() {
   } else if (bar) {
     bar.style.display = 'none';
   }
+}
+
+// ── UWORLD QUESTIONS ─────────────────────────────────────────────────────────
+const UWORLD_URL = 'https://zaidex.github.io/uworld-study/questions.json';
+let uworldData = null;
+let uworldLoading = false;
+let uworldLoaded = false;
+let uworldPanelVisible = true;
+
+async function loadUWorldData() {
+  if (uworldLoaded || uworldLoading) return;
+  uworldLoading = true;
+  try {
+    const res = await fetch(UWORLD_URL);
+    if (!res.ok) throw new Error('failed');
+    uworldData = await res.json();
+  } catch(e) {
+    uworldData = {};
+  }
+  uworldLoaded = true;
+  uworldLoading = false;
+}
+
+async function loadUWorldQuestion(questionId) {
+  if (!uworldLoaded) await loadUWorldData();
+
+  const body = document.getElementById('uworld-panel-body');
+  const chev = document.getElementById('uworld-panel-chevron');
+  if (!body) return;
+
+  body.style.display = uworldPanelVisible ? 'block' : 'none';
+  if (chev) chev.textContent = uworldPanelVisible ? '▲' : '▼';
+
+  if (!uworldData) { body.innerHTML = '<div class="uworld-empty">Loading…</div>'; return; }
+
+  const q = uworldData[String(questionId)];
+  if (!q) {
+    body.innerHTML = '<div class="uworld-empty">No UWorld question for ID ' + questionId + '</div>';
+    return;
+  }
+
+  const correct = (q.correct || '').toUpperCase();
+  const choices = Object.keys(q.choices || {}).sort();
+  let choicesHtml = '';
+  for (let i = 0; i < choices.length; i++) {
+    const l = choices[i];
+    const isCorrect = l === correct;
+    choicesHtml += '<div class="uworld-choice' + (isCorrect ? ' correct' : '') + '">'
+      + '<span class="uworld-choice-letter">' + l + '.</span>'
+      + '<span>' + (q.choices[l] || '') + '</span>'
+      + '</div>';
+  }
+
+  body.innerHTML = '<div class="uworld-stem">' + (q.stem || '') + '</div>'
+    + '<div class="uworld-choices">' + choicesHtml + '</div>';
+}
+
+function toggleUWorldPanel() {
+  const body = document.getElementById('uworld-panel-body');
+  const chev = document.getElementById('uworld-panel-chevron');
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  uworldPanelVisible = !isOpen;
+  body.style.display = isOpen ? 'none' : 'block';
+  if (chev) chev.textContent = isOpen ? '▼' : '▲';
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
@@ -2946,10 +3068,29 @@ function fixImageSrcs(html) {
 
 function parseAnkiCards(text) {
   ankiCardIndex = {};
-  const lines = text.split('\n');
-  // AnKing exports vary — always use the last column which contains tags
-  let tagsColIdx = -1; // -1 = use last column
-  for (const line of lines) {
+  // Split into records properly — newlines inside quoted fields must be preserved
+  // so we parse the whole file character by character into records first
+  const records = [];
+  let cur = '';
+  let inQuote = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') {
+      if (inQuote && text[i+1] === '"') { cur += '"'; i++; }
+      else if (inQuote && (text[i+1] === '\t' || text[i+1] === '\n' || text[i+1] === '\r' || i+1 >= text.length)) { inQuote = false; cur += ch; }
+      else if (!inQuote && (cur === '' || cur.endsWith('\t'))) { inQuote = true; cur += ch; }
+      else { cur += ch; }
+    } else if ((ch === '\n' || ch === '\r') && !inQuote) {
+      if (ch === '\r' && text[i+1] === '\n') i++;
+      if (cur.trim()) records.push(cur);
+      cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  if (cur.trim()) records.push(cur);
+
+  for (const line of records) {
     if (!line || line.startsWith('#')) continue;
     const cols = splitTSVLine(line);
     if (cols.length < 2) continue;
@@ -2962,8 +3103,8 @@ function parseAnkiCards(text) {
     const resourceField = fixImageSrcs(cols[15] || '');
     // Always use last column for tags
     const tagsCol = cols[cols.length - 1] || '';
-    // Match UWorld::...::ID anywhere in tags (handles prefixes like #AK_Step2_v12::#UWorld::Step::3597)
-    const idMatches = tagsCol.match(/UWorld(?:::[^:\s\d][^\s:]*)*::(\d{4,})/g) || [];
+    // Match #UWorld followed by any ::word:: segments then ::ID (4+ digits = real UWorld ID)
+    const idMatches = tagsCol.match(/#UWorld(?:::[^:\s\d][^:\s]*)*::(\d{4,})/g) || [];
     const ids = [...new Set(idMatches.map(m => m.match(/::(\d+)$/)[1]))];
     if (!ids.length) continue;
     const card = { text: textField, extra: extraField, lectureNotes: lectureField, sketchy: sketchyField, additionalResources: resourceField };
@@ -2975,20 +3116,34 @@ function parseAnkiCards(text) {
 }
 
 function splitTSVLine(line) {
-  // Handle tab-separated with quoted fields containing tabs
+  // RFC-4180 TSV: quotes are delimiters only at field boundaries
   const cols = [];
   let cur = '';
   let inQuote = false;
-  for (let i = 0; i < line.length; i++) {
+  let i = 0;
+  while (i < line.length) {
     const ch = line[i];
     if (ch === '"') {
-      if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
-      else inQuote = !inQuote;
+      if (inQuote && line[i+1] === '"') {
+        // Escaped quote inside quoted field
+        cur += '"'; i += 2; continue;
+      } else if (inQuote) {
+        // End quote — only valid if followed by tab or end of line
+        if (i+1 >= line.length || line[i+1] === '\t') { inQuote = false; }
+        else { cur += ch; }
+      } else if (cur === '') {
+        // Start quote — only valid at beginning of field
+        inQuote = true;
+      } else {
+        // Quote in middle of unquoted field — treat as literal
+        cur += ch;
+      }
     } else if (ch === '\t' && !inQuote) {
       cols.push(cur); cur = '';
     } else {
       cur += ch;
     }
+    i++;
   }
   cols.push(cur);
   return cols;
