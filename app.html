@@ -2279,7 +2279,6 @@ function switchTab(tab) {
 }
 
 // ── QBANK ─────────────────────────────────────────────────────────────────────
-// qbankData: loaded from questions.json (must be in same folder as app.html)
 let qbankData = null;
 let qbankFiltered = [];
 let qbankExplOn = false;
@@ -2304,7 +2303,12 @@ function qbankSearch(val) {
   const q = val.trim().toLowerCase();
   if (!q) { renderQBankList(Object.keys(qbankData)); return; }
   const matched = Object.entries(qbankData)
-    .filter(([qid, d]) => qid.includes(q) || (d.stem||'').toLowerCase().includes(q) || (d.subject||'').toLowerCase().includes(q))
+    .filter(([qid, d]) =>
+      qid.includes(q) ||
+      (d.stem || '').toLowerCase().includes(q) ||
+      (d.subject || '').toLowerCase().includes(q) ||
+      (d.system || '').toLowerCase().includes(q)
+    )
     .map(([qid]) => qid);
   renderQBankList(matched);
 }
@@ -2314,8 +2318,8 @@ function renderQBankList(qids) {
   const list = document.getElementById('qbank-list');
   if (!list) return;
   if (!qbankData || qids.length === 0) {
-    list.innerHTML = Object.keys(qbankData||{}).length === 0
-      ? '<div style="color:var(--muted);font-size:0.75rem;padding:1rem 0.25rem;text-align:center;">No questions loaded.<br><span style="font-size:0.68rem;opacity:0.7">Place <code>questions.json</code> next to this file.</span></div>'
+    list.innerHTML = Object.keys(qbankData || {}).length === 0
+      ? '<div style="color:var(--muted);font-size:0.75rem;padding:1rem 0.25rem;text-align:center;">No questions loaded.<br><span style="font-size:0.68rem;opacity:0.7">Place questions.json next to this file.</span></div>'
       : '<div style="color:var(--muted);font-size:0.75rem;padding:0.75rem;text-align:center;">No matches.</div>';
     return;
   }
@@ -2323,43 +2327,63 @@ function renderQBankList(qids) {
   const activeQid = tabState.qbank.qid;
   list.innerHTML = shown.map(qid => {
     const d = qbankData[qid];
-    const stem = (d.stem||'').slice(0,120);
+    const stem = (d.stem || '').slice(0, 120);
     const subj = [d.subject, d.system].filter(Boolean).join(' · ');
-    return '<div class="qbank-item' + (qid===activeQid?' active':'') + '" onclick="qbankOpenQuestion('"'+qid+'"')" id="qbitem-'+qid+'">'
-      +'<div class="qbank-item-header"><span class="qid-label">QID '+qid+'</span><span class="qbank-subject">'+subj+'</span></div>'
-      +'<div class="qbank-item-stem">'+stem+'…</div></div>';
-  }).join('') + (qids.length>200?'<div style="color:var(--muted);font-size:0.68rem;text-align:center;padding:0.5rem;">Showing 200 of '+qids.length+' — search to narrow</div>':'');
+    const cls = qid === activeQid ? 'qbank-item active' : 'qbank-item';
+    return '<div class="' + cls + '" onclick="qbankOpenQuestion(\'' + qid + '\')" id="qbitem-' + qid + '">'
+      + '<div class="qbank-item-header"><span class="qid-label">QID ' + qid + '</span><span class="qbank-subject">' + subj + '</span></div>'
+      + '<div class="qbank-item-stem">' + stem + '...</div></div>';
+  }).join('') + (qids.length > 200
+    ? '<div style="color:var(--muted);font-size:0.68rem;text-align:center;padding:0.5rem;">Showing 200 of ' + qids.length + ' — search to narrow</div>'
+    : '');
 }
 
 function qbankOpenQuestion(qid) {
-  if (!qbankData||!qbankData[qid]) return;
-  document.querySelectorAll('.qbank-item.active').forEach(e=>e.classList.remove('active'));
-  const el = document.getElementById('qbitem-'+qid);
+  if (!qbankData || !qbankData[qid]) return;
+  document.querySelectorAll('.qbank-item.active').forEach(function(e) { e.classList.remove('active'); });
+  const el = document.getElementById('qbitem-' + qid);
   if (el) el.classList.add('active');
   tabState.qbank.qid = qid;
   const d = qbankData[qid];
   const main = document.getElementById('main-content');
   if (!main) return;
-  const correct = (d.correct||'').toUpperCase();
-  const choicesHtml = Object.keys(d.choices||{}).sort().map(l=>
-    '<div class="qbank-choice'+(l===correct?' correct':'')+'"><span class="qbank-choice-letter">'+l+'.</span><span>'+(d.choices[l]||'')+'</span></div>'
-  ).join('');
-  const metaParts = [d.subject&&('Subject: '+d.subject), d.system&&('System: '+d.system), 'QID: '+qid].filter(Boolean).join(' · ');
+  const correct = (d.correct || '').toUpperCase();
+  const choices = Object.keys(d.choices || {}).sort();
+  let choicesHtml = '';
+  for (let i = 0; i < choices.length; i++) {
+    const l = choices[i];
+    const isCorrect = l === correct;
+    choicesHtml += '<div class="qbank-choice' + (isCorrect ? ' correct' : '') + '">'
+      + '<span class="qbank-choice-letter">' + l + '.</span>'
+      + '<span>' + (d.choices[l] || '') + '</span></div>';
+  }
+  const metaParts = [];
+  if (d.subject) metaParts.push('Subject: ' + d.subject);
+  if (d.system) metaParts.push('System: ' + d.system);
+  metaParts.push('QID: ' + qid);
   const showExpl = qbankExplOn;
-  main.innerHTML = '<div id="qbank-main">'
-    +'<div class="qbank-stem">'+(d.stem||'')+'</div>'
-    +'<div class="qbank-choices">'+choicesHtml+'</div>'
-    +(d.explanation?'<button class="qbank-expl-btn '+(showExpl?'active':'')+'" id="qbank-expl-btn" onclick="qbankToggleExpl()">'+(showExpl?'Hide Explanation':'Show Explanation')+'</button>':'')
-    +(d.explanation?'<div id="qbank-expl-wrap" style="display:'+(showExpl?'block':'none')+'"><div class="qbank-explanation">'+d.explanation+'</div></div>':'')
-    +'<div class="qbank-meta">'+metaParts+'</div></div>';
+  let html = '<div id="qbank-main">'
+    + '<div class="qbank-stem">' + (d.stem || '') + '</div>'
+    + '<div class="qbank-choices">' + choicesHtml + '</div>';
+  if (d.explanation) {
+    html += '<button class="qbank-expl-btn' + (showExpl ? ' active' : '') + '" id="qbank-expl-btn" onclick="qbankToggleExpl()">'
+      + (showExpl ? 'Hide Explanation' : 'Show Explanation') + '</button>';
+    html += '<div id="qbank-expl-wrap" style="display:' + (showExpl ? 'block' : 'none') + '">'
+      + '<div class="qbank-explanation">' + d.explanation + '</div></div>';
+  }
+  html += '<div class="qbank-meta">' + metaParts.join(' · ') + '</div></div>';
+  main.innerHTML = html;
 }
 
 function qbankToggleExpl() {
   qbankExplOn = !qbankExplOn;
   const wrap = document.getElementById('qbank-expl-wrap');
   const btn = document.getElementById('qbank-expl-btn');
-  if (wrap) wrap.style.display = qbankExplOn?'block':'none';
-  if (btn) { btn.textContent = qbankExplOn?'Hide Explanation':'Show Explanation'; btn.classList.toggle('active',qbankExplOn); }
+  if (wrap) wrap.style.display = qbankExplOn ? 'block' : 'none';
+  if (btn) {
+    btn.textContent = qbankExplOn ? 'Hide Explanation' : 'Show Explanation';
+    btn.classList.toggle('active', qbankExplOn);
+  }
 }
 
 // ── FLAGGED SIDEBAR ───────────────────────────────────────────────────────────
