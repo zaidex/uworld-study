@@ -83,15 +83,6 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
 .anki-panel-toggle:hover { color: var(--text); background: var(--surface2); }
 .anki-panel-body { padding: 0.75rem; }
 .anki-panel-empty { color: var(--muted); font-size: 0.78rem; text-align: center; padding: 1.5rem; }
-.anki-skeleton { padding: 0.75rem; }
-.anki-skeleton-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 0.75rem; overflow: hidden; }
-.anki-skeleton-header { height: 32px; background: var(--surface); border-bottom: 1px solid var(--border); }
-.anki-skeleton-body { padding: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem; }
-.anki-skeleton-line { height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%); background-size: 200% 100%; animation: skeletonShimmer 1.4s ease-in-out infinite; }
-.anki-skeleton-line.short { width: 60%; }
-.anki-skeleton-line.medium { width: 85%; }
-.anki-skeleton-line.full { width: 100%; }
-@keyframes skeletonShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 /* Anki card display */
 .anki-card-item {
@@ -2971,8 +2962,8 @@ function parseAnkiCards(text) {
     const resourceField = fixImageSrcs(cols[15] || '');
     // Always use last column for tags
     const tagsCol = cols[cols.length - 1] || '';
-    // Match #UWorld followed by any ::word:: segments then ::ID (4+ digits = real UWorld ID)
-    const idMatches = tagsCol.match(/#UWorld(?:::[^:\s\d][^:\s]*)*::(\d{4,})/g) || [];
+    // Match UWorld::...::ID anywhere in tags (handles prefixes like #AK_Step2_v12::#UWorld::Step::3597)
+    const idMatches = tagsCol.match(/UWorld(?:::[^:\s\d][^\s:]*)*::(\d{4,})/g) || [];
     const ids = [...new Set(idMatches.map(m => m.match(/::(\d+)$/)[1]))];
     if (!ids.length) continue;
     const card = { text: textField, extra: extraField, lectureNotes: lectureField, sketchy: sketchyField, additionalResources: resourceField };
@@ -3010,24 +3001,7 @@ async function copyQId(id) {
 }
 
 async function loadAnkiCards(questionId) {
-  // Show skeleton loader immediately while data loads
-  if (!ankiDataLoaded) {
-    const skeletonHTML = `<div class="anki-skeleton">
-      ${[1,2].map(() => `<div class="anki-skeleton-card">
-        <div class="anki-skeleton-header"></div>
-        <div class="anki-skeleton-body">
-          <div class="anki-skeleton-line full"></div>
-          <div class="anki-skeleton-line medium"></div>
-          <div class="anki-skeleton-line short"></div>
-        </div>
-      </div>`).join('')}
-    </div>`;
-    const desktopBody = document.getElementById('anki-panel-body');
-    const mobileBody  = document.getElementById('mobile-anki-body');
-    if (desktopBody) desktopBody.innerHTML = skeletonHTML;
-    if (mobileBody)  mobileBody.innerHTML  = skeletonHTML;
-    await loadAnkiData();
-  }
+  if (!ankiDataLoaded) await loadAnkiData();
 
   // Render content into both panels
   renderAnkiPanel(questionId);
