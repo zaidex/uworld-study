@@ -2288,7 +2288,7 @@ let qbankInitialized = false;
 async function loadQBankData() {
   if (qbankData !== null) return;
   try {
-    const resp = await fetch('questions.json');
+    const resp = await fetch('https://zaidex.github.io/uworld-study/questions.json');
     if (!resp.ok) throw new Error('not found');
     qbankData = await resp.json();
   } catch(e) { qbankData = {}; }
