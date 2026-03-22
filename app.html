@@ -2910,24 +2910,29 @@ function hideDesktopAnkiPanel() {
 
 function toggleAnkiPanel() { toggleDesktopAnkiPanel(); }
 
+let ankiDataPromise = null;
 async function loadAnkiData() {
-  if (ankiDataLoaded || ankiDataLoading) return;
-  ankiDataLoading = true;
-  const statusEl = document.getElementById('anki-panel-status');
-  if (statusEl) statusEl.textContent = 'Loading…';
-  try {
-    const res = await fetch(ANKI_CARDS_URL);
-    if (!res.ok) throw new Error('Could not load anki_cards.txt — check it is in your GitHub repo');
-    const text = await res.text();
-    parseAnkiCards(text);
-    ankiDataLoaded = true;
-    if (statusEl) statusEl.textContent = `${Object.keys(ankiCardIndex).length} IDs indexed`;
-  } catch(e) {
-    if (statusEl) statusEl.textContent = 'Load failed';
-    showToast('Could not load Anki cards: ' + e.message);
-  } finally {
-    ankiDataLoading = false;
+  if (ankiDataLoaded) return;
+  // All concurrent callers share the same promise — no duplicate fetches, no bail-outs
+  if (!ankiDataPromise) {
+    ankiDataPromise = (async () => {
+      const statusEl = document.getElementById('anki-panel-status');
+      if (statusEl) statusEl.textContent = 'Loading…';
+      try {
+        const res = await fetch(ANKI_CARDS_URL);
+        if (!res.ok) throw new Error('Could not load anki_cards.txt — check it is in your GitHub repo');
+        const text = await res.text();
+        parseAnkiCards(text);
+        ankiDataLoaded = true;
+        if (statusEl) statusEl.textContent = `${Object.keys(ankiCardIndex).length} IDs indexed`;
+      } catch(e) {
+        ankiDataPromise = null; // allow retry on failure
+        if (statusEl) statusEl.textContent = 'Load failed';
+        showToast('Could not load Anki cards: ' + e.message);
+      }
+    })();
   }
+  return ankiDataPromise;
 }
 
 function stripCloze(html) {
@@ -2963,7 +2968,11 @@ function parseAnkiCards(text) {
     // Always use last column for tags
     const tagsCol = cols[cols.length - 1] || '';
     // Match UWorld::...::ID anywhere in tags (handles prefixes like #AK_Step2_v12::#UWorld::Step::3597)
+<<<<<<< HEAD
     const idMatches = tagsCol.match(/UWorld(?:::[^:\s\d][^\s:]*)*::(\d{4,})/g) || [];
+=======
+    const idMatches = tagsCol.match(/UWorld(?:::[^\s:]+)*::(\d+)/g) || [];
+>>>>>>> 86cbbbe58c7d314f3766a5a097f817e6f4140da3
     const ids = [...new Set(idMatches.map(m => m.match(/::(\d+)$/)[1]))];
     if (!ids.length) continue;
     const card = { text: textField, extra: extraField, lectureNotes: lectureField, sketchy: sketchyField, additionalResources: resourceField };
@@ -3001,21 +3010,44 @@ async function copyQId(id) {
 }
 
 async function loadAnkiCards(questionId) {
+<<<<<<< HEAD
   if (!ankiDataLoaded) await loadAnkiData();
+=======
+  // Show a loading placeholder immediately so the panel isn't blank
+  const desktopBody = document.getElementById('anki-panel-body');
+  const mobileBody  = document.getElementById('mobile-anki-body');
+  const loadingHtml = '<div class="anki-panel-empty" style="padding:1rem;text-align:center;color:var(--muted);font-size:0.78rem">⧗ Loading cards…</div>';
+  if (!ankiDataLoaded) {
+    if (desktopBody) desktopBody.innerHTML = loadingHtml;
+    if (mobileBody)  mobileBody.innerHTML  = loadingHtml;
+  }
+>>>>>>> 86cbbbe58c7d314f3766a5a097f817e6f4140da3
+
+  // Wait for data — all concurrent calls share the same promise
+  await loadAnkiData();
+
+  // After awaiting, make sure we're still on the same question (user may have navigated)
+  const currentId = (() => {
+    try {
+      const sec = ALL_SUBSECS[currentSubsec];
+      return sec && sec.questions[currentQ] ? sec.questions[currentQ].id : null;
+    } catch(e) { return null; }
+  })();
+  if (String(currentId) !== String(questionId)) return; // stale, skip
 
   // Render content into both panels
   renderAnkiPanel(questionId);
   renderMobileAnkiPanel(questionId);
 
   // Apply the saved open/closed state
-  const desktopBody = document.getElementById('anki-panel-body');
   const desktopChev = document.getElementById('desktop-anki-chevron');
-  const mobileBody = document.getElementById('mobile-anki-body');
-  const mobileChev = document.getElementById('mobile-anki-chevron');
+  const mobileChev  = document.getElementById('mobile-anki-chevron');
+  const dBody = document.getElementById('anki-panel-body');
+  const mBody = document.getElementById('mobile-anki-body');
 
-  if (desktopBody) desktopBody.style.display = ankiPanelVisible ? 'block' : 'none';
+  if (dBody) dBody.style.display = ankiPanelVisible ? 'block' : 'none';
   if (desktopChev) desktopChev.textContent = ankiPanelVisible ? '▲' : '▼';
-  if (mobileBody) mobileBody.style.display = ankiPanelVisible ? 'block' : 'none';
+  if (mBody) mBody.style.display = ankiPanelVisible ? 'block' : 'none';
   if (mobileChev) mobileChev.textContent = ankiPanelVisible ? '▲' : '▼';
 }
 
