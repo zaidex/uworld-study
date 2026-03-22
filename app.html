@@ -2910,24 +2910,28 @@ function hideDesktopAnkiPanel() {
 
 function toggleAnkiPanel() { toggleDesktopAnkiPanel(); }
 
+let ankiDataPromise = null;
 async function loadAnkiData() {
-  if (ankiDataLoaded || ankiDataLoading) return;
-  ankiDataLoading = true;
-  const statusEl = document.getElementById('anki-panel-status');
-  if (statusEl) statusEl.textContent = 'Loading…';
-  try {
-    const res = await fetch(ANKI_CARDS_URL);
-    if (!res.ok) throw new Error('Could not load anki_cards.txt — check it is in your GitHub repo');
-    const text = await res.text();
-    parseAnkiCards(text);
-    ankiDataLoaded = true;
-    if (statusEl) statusEl.textContent = `${Object.keys(ankiCardIndex).length} IDs indexed`;
-  } catch(e) {
-    if (statusEl) statusEl.textContent = 'Load failed';
-    showToast('Could not load Anki cards: ' + e.message);
-  } finally {
-    ankiDataLoading = false;
-  }
+  if (ankiDataLoaded) return;
+  // If already loading, return the same promise so concurrent callers all await the same fetch
+  if (ankiDataPromise) return ankiDataPromise;
+  ankiDataPromise = (async () => {
+    const statusEl = document.getElementById('anki-panel-status');
+    if (statusEl) statusEl.textContent = 'Loading…';
+    try {
+      const res = await fetch(ANKI_CARDS_URL);
+      if (!res.ok) throw new Error('Could not load anki_cards.txt — check it is in your GitHub repo');
+      const text = await res.text();
+      parseAnkiCards(text);
+      ankiDataLoaded = true;
+      if (statusEl) statusEl.textContent = `${Object.keys(ankiCardIndex).length} IDs indexed`;
+    } catch(e) {
+      ankiDataPromise = null; // allow retry on failure
+      if (statusEl) statusEl.textContent = 'Load failed';
+      showToast('Could not load Anki cards: ' + e.message);
+    }
+  })();
+  return ankiDataPromise;
 }
 
 function stripCloze(html) {
@@ -2963,7 +2967,7 @@ function parseAnkiCards(text) {
     // Always use last column for tags
     const tagsCol = cols[cols.length - 1] || '';
     // Match UWorld::...::ID anywhere in tags (handles prefixes like #AK_Step2_v12::#UWorld::Step::3597)
-    const idMatches = tagsCol.match(/UWorld(?:::[^:\s\d][^\s:]*)*::(\d{4,})/g) || [];
+    const idMatches = tagsCol.match(/UWorld(?:::[^\s:]+)*::(\d+)/g) || [];
     const ids = [...new Set(idMatches.map(m => m.match(/::(\d+)$/)[1]))];
     if (!ids.length) continue;
     const card = { text: textField, extra: extraField, lectureNotes: lectureField, sketchy: sketchyField, additionalResources: resourceField };
