@@ -2231,7 +2231,9 @@ async function loadUWorldQuestion(questionId) {
     const isCorrect = l === correct;
     // Strip trailing percentage like " [53%]" or " (53%)"
     let choiceText = (q.choices[l] || '');
-    choiceText = choiceText.replace(/\s*[\[(]\d+%[\])]\s*$/, '');
+    // Strip percentage like [35%] or [53% — even if closing bracket missing
+    choiceText = choiceText.replace(/\s*\[\d+%\]?/g, '');
+    choiceText = choiceText.replace(/\s*\(\d+%\)?/g, '');
     // Strip any explanation that bleeds in after the choice text.
     // Explanations start with "Incorrect.", "Correct answer", or "Explanation:"
     choiceText = choiceText.replace(/\s*(Incorrect\.?|Correct answer|Explanation:|This patient|\(Choice).*$/si, '');
@@ -2242,13 +2244,24 @@ async function loadUWorldQuestion(questionId) {
       + '</div>';
   }
 
-  // Clean stem: strip leading "Subject: X System: Y" prefix that sometimes
-  // bleeds in from the PDF parser before the actual question text.
+  // Clean stem: strip leading metadata like "Medicine System: Hematology & Oncology (...)"
   let stem = (q.stem || '');
-  // Remove "Subject: ... System: ..." prefix up to a recognisable sentence start
-  stem = stem.replace(/^(Subject|System|Topic)[^A-Z\n]{0,200}?(?=[A-Z][a-z])/s, '');
-  // Also strip any leading label like "Subject: Medicine System: Hematology …"
-  stem = stem.replace(/^(Subject:.*?System:.*?)(?=[A-Z0-9])/s, '');
+  // If stem contains "System:" in first 150 chars, strip everything up to first real sentence.
+  // A real sentence starts with a capital letter followed by a lowercase letter,
+  // after a closing paren or after the metadata block.
+  if (stem.indexOf('System:') < 150 || stem.indexOf('Subject:') < 150) {
+    // Try to find the closing paren of the metadata block, then take what follows
+    const parenMatch = stem.match(/^.+?\([^)]+\)\s*/);
+    if (parenMatch) {
+      stem = stem.slice(parenMatch[0].length);
+    } else {
+      // No paren — just strip up to first sentence (capital + space pattern after a colon region)
+      const sentenceMatch = stem.match(/^.{0,200}?(?=[A-Z][a-z]{2})/s);
+      if (sentenceMatch && sentenceMatch.index > 5) {
+        stem = stem.slice(sentenceMatch[0].length);
+      }
+    }
+  }
   stem = stem.trim();
 
   body.innerHTML = '<div class="uworld-stem">' + stem + '</div>'
