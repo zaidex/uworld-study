@@ -531,7 +531,7 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
 }
 .uworld-panel-body { padding: 0.85rem 0.9rem; }
 .uworld-stem {
-  font-size: 0.85rem; line-height: 1.65; color: var(--text);
+  font-size: var(--q-font-size, 0.95rem); line-height: 1.7; color: var(--text);
   margin-bottom: 1rem;
 }
 .uworld-choices { display: flex; flex-direction: column; gap: 0.4rem; }
@@ -539,7 +539,7 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
   display: flex; align-items: flex-start; gap: 0.6rem;
   padding: 0.55rem 0.75rem; border-radius: 7px;
   border: 1px solid var(--border); background: var(--surface);
-  font-size: 0.8rem; line-height: 1.45;
+  font-size: var(--q-font-size, 0.95rem); line-height: 1.55;
 }
 .uworld-choice.correct {
   border-color: var(--green); background: rgba(62,207,142,0.08);
@@ -2229,13 +2229,29 @@ async function loadUWorldQuestion(questionId) {
   for (let i = 0; i < choices.length; i++) {
     const l = choices[i];
     const isCorrect = l === correct;
+    // Strip trailing percentage like " [53%]" or " (53%)"
+    let choiceText = (q.choices[l] || '');
+    choiceText = choiceText.replace(/\s*[\[(]\d+%[\])]\s*$/, '');
+    // Strip any explanation that bleeds in after the choice text.
+    // Explanations start with "Incorrect.", "Correct answer", or "Explanation:"
+    choiceText = choiceText.replace(/\s*(Incorrect\.?|Correct answer|Explanation:|This patient|\(Choice).*$/si, '');
+    choiceText = choiceText.trim();
     choicesHtml += '<div class="uworld-choice' + (isCorrect ? ' correct' : '') + '">'
       + '<span class="uworld-choice-letter">' + l + '.</span>'
-      + '<span>' + (q.choices[l] || '') + '</span>'
+      + '<span>' + choiceText + '</span>'
       + '</div>';
   }
 
-  body.innerHTML = '<div class="uworld-stem">' + (q.stem || '') + '</div>'
+  // Clean stem: strip leading "Subject: X System: Y" prefix that sometimes
+  // bleeds in from the PDF parser before the actual question text.
+  let stem = (q.stem || '');
+  // Remove "Subject: ... System: ..." prefix up to a recognisable sentence start
+  stem = stem.replace(/^(Subject|System|Topic)[^A-Z\n]{0,200}?(?=[A-Z][a-z])/s, '');
+  // Also strip any leading label like "Subject: Medicine System: Hematology …"
+  stem = stem.replace(/^(Subject:.*?System:.*?)(?=[A-Z0-9])/s, '');
+  stem = stem.trim();
+
+  body.innerHTML = '<div class="uworld-stem">' + stem + '</div>'
     + '<div class="uworld-choices">' + choicesHtml + '</div>';
 }
 
