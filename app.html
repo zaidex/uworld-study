@@ -1648,6 +1648,7 @@ async function syncToCloud() {
   try {
     const uid = getUserId();
     const body = {
+      user_id: uid,
       auth_user_id: uid,
       done, flags, notes, images,
       daily_counts: getDailyCounts(),
@@ -1655,9 +1656,10 @@ async function syncToCloud() {
       font_size: fontSizeIdx,
       updated_at: new Date().toISOString()
     };
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?auth_user_id=eq.${uid}`, {
-      method: 'PATCH',
-      headers: getHeaders(),
+    // Use upsert so new users get a row created automatically
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress`, {
+      method: 'POST',
+      headers: { ...getHeaders(), 'Prefer': 'resolution=merge-duplicates' },
       body: JSON.stringify(body)
     });
     if (!res.ok) throw new Error(await res.text());
@@ -2944,29 +2946,10 @@ function fixImageSrcs(html) {
 
 function parseAnkiCards(text) {
   ankiCardIndex = {};
-  // Split into records properly — newlines inside quoted fields must be preserved
-  // so we parse the whole file character by character into records first
-  const records = [];
-  let cur = '';
-  let inQuote = false;
-  for (let i = 0; i < text.length; i++) {
-    const ch = text[i];
-    if (ch === '"') {
-      if (inQuote && text[i+1] === '"') { cur += '"'; i++; }
-      else if (inQuote && (text[i+1] === '\t' || text[i+1] === '\n' || text[i+1] === '\r' || i+1 >= text.length)) { inQuote = false; cur += ch; }
-      else if (!inQuote && (cur === '' || cur.endsWith('\t'))) { inQuote = true; cur += ch; }
-      else { cur += ch; }
-    } else if ((ch === '\n' || ch === '\r') && !inQuote) {
-      if (ch === '\r' && text[i+1] === '\n') i++;
-      if (cur.trim()) records.push(cur);
-      cur = '';
-    } else {
-      cur += ch;
-    }
-  }
-  if (cur.trim()) records.push(cur);
-
-  for (const line of records) {
+  const lines = text.split('\n');
+  // AnKing exports vary — always use the last column which contains tags
+  let tagsColIdx = -1; // -1 = use last column
+  for (const line of lines) {
     if (!line || line.startsWith('#')) continue;
     const cols = splitTSVLine(line);
     if (cols.length < 2) continue;
@@ -2979,8 +2962,8 @@ function parseAnkiCards(text) {
     const resourceField = fixImageSrcs(cols[15] || '');
     // Always use last column for tags
     const tagsCol = cols[cols.length - 1] || '';
-    // Match #UWorld followed by any ::word:: segments then ::ID (4+ digits = real UWorld ID)
-    const idMatches = tagsCol.match(/#UWorld(?:::[^:\s\d][^:\s]*)*::(\d{4,})/g) || [];
+    // Match UWorld::...::ID anywhere in tags (handles prefixes like #AK_Step2_v12::#UWorld::Step::3597)
+    const idMatches = tagsCol.match(/UWorld(?:::[^:\s\d][^\s:]*)*::(\d{4,})/g) || [];
     const ids = [...new Set(idMatches.map(m => m.match(/::(\d+)$/)[1]))];
     if (!ids.length) continue;
     const card = { text: textField, extra: extraField, lectureNotes: lectureField, sketchy: sketchyField, additionalResources: resourceField };
@@ -2992,34 +2975,20 @@ function parseAnkiCards(text) {
 }
 
 function splitTSVLine(line) {
-  // RFC-4180 TSV: quotes are delimiters only at field boundaries
+  // Handle tab-separated with quoted fields containing tabs
   const cols = [];
   let cur = '';
   let inQuote = false;
-  let i = 0;
-  while (i < line.length) {
+  for (let i = 0; i < line.length; i++) {
     const ch = line[i];
     if (ch === '"') {
-      if (inQuote && line[i+1] === '"') {
-        // Escaped quote inside quoted field
-        cur += '"'; i += 2; continue;
-      } else if (inQuote) {
-        // End quote — only valid if followed by tab or end of line
-        if (i+1 >= line.length || line[i+1] === '\t') { inQuote = false; }
-        else { cur += ch; }
-      } else if (cur === '') {
-        // Start quote — only valid at beginning of field
-        inQuote = true;
-      } else {
-        // Quote in middle of unquoted field — treat as literal
-        cur += ch;
-      }
+      if (inQuote && line[i+1] === '"') { cur += '"'; i++; }
+      else inQuote = !inQuote;
     } else if (ch === '\t' && !inQuote) {
       cols.push(cur); cur = '';
     } else {
       cur += ch;
     }
-    i++;
   }
   cols.push(cur);
   return cols;
