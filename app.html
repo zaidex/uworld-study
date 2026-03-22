@@ -529,13 +529,12 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
   display: flex; align-items: center; gap: 0.4rem;
   font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.05em;
 }
-.uworld-panel-status { font-size: 0.65rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); }
-.uworld-panel-body { padding: 0.75rem; }
+.uworld-panel-body { padding: 0.85rem 0.9rem; }
 .uworld-stem {
-  font-size: 0.85rem; line-height: 1.6; color: var(--text);
+  font-size: 0.85rem; line-height: 1.65; color: var(--text);
   margin-bottom: 1rem;
 }
-.uworld-choices { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+.uworld-choices { display: flex; flex-direction: column; gap: 0.4rem; }
 .uworld-choice {
   display: flex; align-items: flex-start; gap: 0.6rem;
   padding: 0.55rem 0.75rem; border-radius: 7px;
@@ -550,30 +549,6 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
   font-size: 0.75rem; flex-shrink: 0; min-width: 1.1rem; padding-top: 0.05rem;
 }
 .uworld-choice.correct .uworld-choice-letter { color: var(--green); }
-.uworld-expl-btn {
-  padding: 0.38rem 1rem; border-radius: 6px;
-  border: 1px solid var(--accent); background: transparent; color: var(--accent);
-  font-size: 0.75rem; font-family: 'IBM Plex Sans', sans-serif; font-weight: 500;
-  cursor: pointer; transition: background 0.15s, color 0.15s;
-  margin-bottom: 0;
-}
-.uworld-expl-btn:hover { background: var(--accent); color: #fff; }
-.uworld-expl-btn.open { background: var(--accent); color: #fff; }
-.uworld-explanations {
-  margin-top: 0.85rem;
-  display: flex; flex-direction: column; gap: 0.5rem;
-}
-.uworld-expl-item {
-  padding: 0.6rem 0.75rem; border-radius: 7px;
-  border: 1px solid var(--border); background: var(--surface);
-  font-size: 0.78rem; line-height: 1.55;
-}
-.uworld-expl-item .expl-letter {
-  font-family: 'IBM Plex Mono', monospace; font-weight: 700;
-  font-size: 0.72rem; color: var(--accent); margin-bottom: 0.25rem;
-}
-.uworld-expl-item.correct-expl { border-color: var(--green); }
-.uworld-expl-item.correct-expl .expl-letter { color: var(--green); }
 .uworld-empty {
   color: var(--muted); font-size: 0.78rem; text-align: center; padding: 1.2rem;
 }
@@ -2175,10 +2150,7 @@ function renderQuestion() {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             UWORLD QUESTION
           </div>
-          <div style="display:flex;align-items:center;gap:0.6rem">
-            <span class="uworld-panel-status" id="uworld-panel-status"></span>
-            <span id="uworld-panel-chevron" style="font-size:0.7rem;color:var(--muted)">▲</span>
-          </div>
+          <span id="uworld-panel-chevron" style="font-size:0.7rem;color:var(--muted)">▲</span>
         </div>
         <div class="uworld-panel-body" id="uworld-panel-body"></div>
       </div>
@@ -2219,26 +2191,19 @@ const UWORLD_URL = 'https://zaidex.github.io/uworld-study/questions.json';
 let uworldData = null;
 let uworldLoading = false;
 let uworldLoaded = false;
-let uworldPanelVisible = true;  // global open/close state persists across questions
-let uworldExplVisible = false;  // global toggle: show explanations
+let uworldPanelVisible = true;
 
 async function loadUWorldData() {
   if (uworldLoaded || uworldLoading) return;
   uworldLoading = true;
-  const statusEl = document.getElementById('uworld-panel-status');
-  if (statusEl) statusEl.textContent = 'Loading…';
   try {
     const res = await fetch(UWORLD_URL);
-    if (!res.ok) throw new Error('Could not load questions.json');
+    if (!res.ok) throw new Error('failed');
     uworldData = await res.json();
-    uworldLoaded = true;
-    if (statusEl) statusEl.textContent = Object.keys(uworldData).length + ' questions';
   } catch(e) {
-    uworldLoaded = true; // mark loaded so we don't retry infinitely
     uworldData = {};
-    const statusEl = document.getElementById('uworld-panel-status');
-    if (statusEl) statusEl.textContent = 'Not available';
   }
+  uworldLoaded = true;
   uworldLoading = false;
 }
 
@@ -2249,69 +2214,31 @@ async function loadUWorldQuestion(questionId) {
   const chev = document.getElementById('uworld-panel-chevron');
   if (!body) return;
 
-  // Apply the saved open/closed state
   body.style.display = uworldPanelVisible ? 'block' : 'none';
   if (chev) chev.textContent = uworldPanelVisible ? '▲' : '▼';
 
-  if (!uworldData) {
-    body.innerHTML = '<div class="uworld-empty">Loading…</div>';
-    return;
-  }
+  if (!uworldData) { body.innerHTML = '<div class="uworld-empty">Loading…</div>'; return; }
 
-  const qid = String(questionId);
-  const q = uworldData[qid];
-
+  const q = uworldData[String(questionId)];
   if (!q) {
-    body.innerHTML = '<div class="uworld-empty">No UWorld question found for ID ' + qid + '</div>';
+    body.innerHTML = '<div class="uworld-empty">No UWorld question for ID ' + questionId + '</div>';
     return;
   }
-
-  renderUWorldQuestion(q, qid);
-}
-
-function renderUWorldQuestion(q, qid) {
-  const body = document.getElementById('uworld-panel-body');
-  if (!body) return;
 
   const correct = (q.correct || '').toUpperCase();
   const choices = Object.keys(q.choices || {}).sort();
-
-  // Build choices HTML
   let choicesHtml = '';
   for (let i = 0; i < choices.length; i++) {
-    const letter = choices[i];
-    const isCorrect = letter === correct;
+    const l = choices[i];
+    const isCorrect = l === correct;
     choicesHtml += '<div class="uworld-choice' + (isCorrect ? ' correct' : '') + '">'
-      + '<span class="uworld-choice-letter">' + letter + '.</span>'
-      + '<span>' + (q.choices[letter] || '') + '</span>'
+      + '<span class="uworld-choice-letter">' + l + '.</span>'
+      + '<span>' + (q.choices[l] || '') + '</span>'
       + '</div>';
   }
 
-  // Build per-choice explanation blocks (shown only when toggled)
-  // The explanation field contains full explanation text.
-  // We show it as one block since UWorld's format is a single explanation string.
-  const hasExpl = !!(q.explanation && q.explanation.trim());
-  const explBtnClass = 'uworld-expl-btn' + (uworldExplVisible ? ' open' : '');
-  const explBtnText = uworldExplVisible ? 'Hide Explanation' : 'Show Explanation';
-
-  let explHtml = '';
-  if (hasExpl) {
-    explHtml = '<div id="uworld-expl-wrap" style="display:' + (uworldExplVisible ? 'block' : 'none') + '">'
-      + '<div class="uworld-explanations">'
-      + '<div class="uworld-expl-item' + (correct ? ' correct-expl' : '') + '">'
-      + '<div class="expl-letter">Explanation</div>'
-      + q.explanation
-      + '</div>'
-      + '</div>'
-      + '</div>';
-  }
-
-  body.innerHTML = '<div style="padding:0.15rem 0">'
-    + '<div class="uworld-stem">' + (q.stem || '') + '</div>'
-    + '<div class="uworld-choices">' + choicesHtml + '</div>'
-    + (hasExpl ? '<button class="' + explBtnClass + '" id="uworld-expl-btn" onclick="toggleUWorldExpl()">' + explBtnText + '</button>' : '')
-    + explHtml
-    + '</div>';
+  body.innerHTML = '<div class="uworld-stem">' + (q.stem || '') + '</div>'
+    + '<div class="uworld-choices">' + choicesHtml + '</div>';
 }
 
 function toggleUWorldPanel() {
@@ -2322,17 +2249,6 @@ function toggleUWorldPanel() {
   uworldPanelVisible = !isOpen;
   body.style.display = isOpen ? 'none' : 'block';
   if (chev) chev.textContent = isOpen ? '▼' : '▲';
-}
-
-function toggleUWorldExpl() {
-  uworldExplVisible = !uworldExplVisible;
-  const wrap = document.getElementById('uworld-expl-wrap');
-  const btn = document.getElementById('uworld-expl-btn');
-  if (wrap) wrap.style.display = uworldExplVisible ? 'block' : 'none';
-  if (btn) {
-    btn.textContent = uworldExplVisible ? 'Hide Explanation' : 'Show Explanation';
-    btn.classList.toggle('open', uworldExplVisible);
-  }
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
