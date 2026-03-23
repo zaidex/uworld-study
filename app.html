@@ -554,6 +554,24 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
   color: var(--muted); font-size: 0.78rem; text-align: center; padding: 1.2rem;
 }
 
+/* LOADING SPINNER */
+@keyframes uw-spin {
+  to { transform: rotate(360deg); }
+}
+.uw-spinner {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.5rem; padding: 1.2rem;
+  color: var(--muted); font-size: 0.75rem;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.uw-spinner-ring {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  animation: uw-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
 .q-notes-panel {
   margin-top: 1rem;
   border: 1px solid var(--border);
@@ -1304,7 +1322,7 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
 </div>
 
 <div class="layout" id="main-layout">
-  <button class="sidebar-toggle-btn" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+  <button class="sidebar-toggle-btn" id="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar" style="display:none">
     <svg id="sidebar-toggle-icon" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15,18 9,12 15,6"/></svg>
   </button>
   <div class="sidebar" id="sidebar">
@@ -2205,13 +2223,16 @@ async function loadUWorldData() {
 }
 
 async function loadUWorldQuestion(questionId) {
-  if (!uworldLoaded) await loadUWorldData();
   const body = document.getElementById('uworld-panel-body');
+  if (!uworldLoaded) {
+    if (body) body.innerHTML = '<div class="uw-spinner"><div class="uw-spinner-ring"></div>Loading question…</div>';
+    await loadUWorldData();
+  }
   const chev = document.getElementById('uworld-panel-chevron');
   if (!body) return;
   body.style.display = uworldPanelVisible ? 'block' : 'none';
   if (chev) chev.textContent = uworldPanelVisible ? '▲' : '▼';
-  if (!uworldData) { body.innerHTML = '<div class="uworld-empty">Loading…</div>'; return; }
+  if (!uworldData) { body.innerHTML = '<div class="uw-spinner"><div class="uw-spinner-ring"></div>Loading question…</div>'; return; }
   const q = uworldData[String(questionId)];
   if (!q) { body.innerHTML = '<div class="uworld-empty">No UWorld question for ID ' + questionId + '</div>'; return; }
 
@@ -3178,7 +3199,7 @@ function renderAnkiPanel(questionId) {
   const empty = document.getElementById('anki-panel-empty');
 
   if (!ankiCardIndex) {
-    body.innerHTML = '<div class="anki-panel-empty"><div>Cards not loaded yet</div></div>';
+    body.innerHTML = '<div class="uw-spinner"><div class="uw-spinner-ring"></div>Loading cards…</div>';
     return;
   }
 
