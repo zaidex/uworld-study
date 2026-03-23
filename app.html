@@ -2264,14 +2264,22 @@ async function loadUWorldQuestion(questionId) {
 function uworldRevealAnswer(correct) {
   var wrap = document.getElementById('uworld-choices-wrap');
   var btn  = document.getElementById('uworld-show-btn');
-  if (!wrap) return;
+  if (!wrap || !btn) return;
+  var showing = btn.getAttribute('data-showing') === '1';
   var items = wrap.querySelectorAll('.uworld-choice');
   for (var i = 0; i < items.length; i++) {
     if (items[i].getAttribute('data-letter') === correct) {
-      items[i].classList.add('correct');
+      if (showing) items[i].classList.remove('correct');
+      else items[i].classList.add('correct');
     }
   }
-  if (btn) btn.style.display = 'none';
+  if (showing) {
+    btn.setAttribute('data-showing', '0');
+    btn.textContent = 'Show Answer';
+  } else {
+    btn.setAttribute('data-showing', '1');
+    btn.textContent = 'Hide Answer';
+  }
 }
 
 function toggleUWorldPanel() {
