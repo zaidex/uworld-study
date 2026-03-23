@@ -448,6 +448,7 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
 
 /* ── SIDEBAR TOGGLE ──────────────────────────────────────────────────────────── */
 .sidebar-toggle-btn {
+  display: none;
   position: fixed;
   left: 310px;
   top: 50vh;
@@ -3704,6 +3705,8 @@ function showHome() {
 
 function hideHome() {
   document.getElementById('home-overlay').classList.remove('visible');
+  const toggleBtn = document.getElementById('sidebar-toggle');
+  if (toggleBtn) toggleBtn.style.display = '';
   document.body.classList.remove('home-open');
   // Restore body scroll exactly where it was
   document.body.style.overflow = '';
