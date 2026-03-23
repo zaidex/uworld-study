@@ -3176,7 +3176,14 @@ async function copyQId(id) {
 }
 
 async function loadAnkiCards(questionId) {
-  if (!ankiDataLoaded) await loadAnkiData();
+  if (!ankiDataLoaded) {
+    const desktopBody = document.getElementById('anki-panel-body');
+    const mobileBody  = document.getElementById('mobile-anki-body');
+    const spinner = '<div class="uw-spinner"><div class="uw-spinner-ring"></div>Loading cards…</div>';
+    if (desktopBody) desktopBody.innerHTML = spinner;
+    if (mobileBody)  mobileBody.innerHTML  = spinner;
+    await loadAnkiData();
+  }
 
   // Render content into both panels
   renderAnkiPanel(questionId);
