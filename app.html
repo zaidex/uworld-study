@@ -448,7 +448,6 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
 
 /* ── SIDEBAR TOGGLE ──────────────────────────────────────────────────────────── */
 .sidebar-toggle-btn {
-  display: none;
   position: fixed;
   left: 310px;
   top: 50vh;
@@ -510,6 +509,21 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
 .btn-reset-subsec:hover { border-color: var(--danger); color: var(--danger); }
 
 /* ── NOTES & IMAGE PANEL ─────────────────────────────────────────────────────── */
+/* LOADING SPINNER */
+@keyframes uw-spin { to { transform: rotate(360deg); } }
+.uw-spinner {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.5rem; padding: 1.2rem;
+  color: var(--muted); font-size: 0.75rem;
+  font-family: 'IBM Plex Mono', monospace;
+}
+.uw-spinner-ring {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  animation: uw-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
 /* UWORLD PANEL */
 .uworld-panel-box {
   background: var(--surface2);
@@ -535,7 +549,7 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
   font-size: var(--q-font-size, 0.95rem); line-height: 1.7; color: var(--text);
   margin-bottom: 1rem;
 }
-.uworld-choices { display: flex; flex-direction: column; gap: 0.4rem; }
+.uworld-choices { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.85rem; }
 .uworld-choice {
   display: flex; align-items: flex-start; gap: 0.6rem;
   padding: 0.55rem 0.75rem; border-radius: 7px;
@@ -553,24 +567,14 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
 .uworld-empty {
   color: var(--muted); font-size: 0.78rem; text-align: center; padding: 1.2rem;
 }
-
-/* LOADING SPINNER */
-@keyframes uw-spin {
-  to { transform: rotate(360deg); }
+.uworld-show-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.4rem 1.1rem; border-radius: 6px;
+  border: 1px solid var(--accent); background: transparent; color: var(--accent);
+  font-size: 0.75rem; font-family: 'IBM Plex Sans', sans-serif; font-weight: 500;
+  cursor: pointer; transition: background 0.15s, color 0.15s;
 }
-.uw-spinner {
-  display: flex; align-items: center; justify-content: center;
-  gap: 0.5rem; padding: 1.2rem;
-  color: var(--muted); font-size: 0.75rem;
-  font-family: 'IBM Plex Mono', monospace;
-}
-.uw-spinner-ring {
-  width: 16px; height: 16px; border-radius: 50%;
-  border: 2px solid var(--border);
-  border-top-color: var(--accent);
-  animation: uw-spin 0.7s linear infinite;
-  flex-shrink: 0;
-}
+.uworld-show-btn:hover { background: var(--accent); color: #fff; }
 
 .q-notes-panel {
   margin-top: 1rem;
@@ -2167,7 +2171,7 @@ function renderQuestion() {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             UWORLD QUESTION
           </div>
-          <span id="uworld-panel-chevron" style="font-size:0.7rem;color:var(--muted)">▲</span>
+          <span id="uworld-panel-chevron" style="font-size:0.7rem;color:var(--muted)">&#9650;</span>
         </div>
         <div class="uworld-panel-body" id="uworld-panel-body"></div>
       </div>
@@ -2214,7 +2218,7 @@ async function loadUWorldData() {
   if (uworldLoaded || uworldLoading) return;
   uworldLoading = true;
   try {
-    const res = await fetch(UWORLD_URL);
+    var res = await fetch(UWORLD_URL);
     if (!res.ok) throw new Error('failed');
     uworldData = await res.json();
   } catch(e) { uworldData = {}; }
@@ -2223,50 +2227,61 @@ async function loadUWorldData() {
 }
 
 async function loadUWorldQuestion(questionId) {
-  const body = document.getElementById('uworld-panel-body');
+  var body = document.getElementById('uworld-panel-body');
+  var chev = document.getElementById('uworld-panel-chevron');
+  if (!body) return;
   if (!uworldLoaded) {
-    if (body) body.innerHTML = '<div class="uw-spinner"><div class="uw-spinner-ring"></div>Loading question…</div>';
+    body.innerHTML = '<div class="uw-spinner"><div class="uw-spinner-ring"></div>Loading question\u2026</div>';
     await loadUWorldData();
   }
-  const chev = document.getElementById('uworld-panel-chevron');
-  if (!body) return;
   body.style.display = uworldPanelVisible ? 'block' : 'none';
-  if (chev) chev.textContent = uworldPanelVisible ? '▲' : '▼';
-  if (!uworldData) { body.innerHTML = '<div class="uw-spinner"><div class="uw-spinner-ring"></div>Loading question…</div>'; return; }
-  const q = uworldData[String(questionId)];
+  if (chev) chev.textContent = uworldPanelVisible ? '\u25b2' : '\u25bc';
+  if (!uworldData) { body.innerHTML = '<div class="uworld-empty">Not available</div>'; return; }
+  var q = uworldData[String(questionId)];
   if (!q) { body.innerHTML = '<div class="uworld-empty">No UWorld question for ID ' + questionId + '</div>'; return; }
 
-  // Clean stem: find real clinical sentence start
-  let stem = (q.stem || '');
-  const sm = stem.match(/(A \d|An \d|A male |A female |A man |A woman |A child |A boy |A girl |A neonate|A newborn|A patient |The patient )/);
+  var stem = (q.stem || '');
+  var sm = stem.match(/(A \d|An \d|A male |A female |A man |A woman |A child |A boy |A girl |A neonate|A newborn|A patient |The patient )/);
   if (sm) stem = stem.slice(sm.index);
   stem = stem.replace(/^[,;.\s]+/, '').trim();
 
-  const correct = (q.correct || '').toUpperCase();
-  const choices = Object.keys(q.choices || {}).sort();
-  let choicesHtml = '';
-  for (let i = 0; i < choices.length; i++) {
-    const l = choices[i];
-    const isCorrect = l === correct;
-    let choiceText = (q.choices[l] || '');
-    choiceText = choiceText.replace(/\s*\[\d+%\]?/g, '');
-    choiceText = choiceText.replace(/\s*\(\d+%\)?/g, '');
-    choicesHtml += '<div class="uworld-choice' + (isCorrect ? ' correct' : '') + '">'
-      + '<span class="uworld-choice-letter">' + l + '.</span>'
-      + '<span>' + choiceText + '</span></div>';
+  var correct = (q.correct || '').toUpperCase();
+  var choices = Object.keys(q.choices || {}).sort();
+  var choicesHtml = '';
+  for (var i = 0; i < choices.length; i++) {
+    var l = choices[i];
+    var ct = (q.choices[l] || '');
+    ct = ct.replace(/\s*\[\d+%\]?/g, '');
+    ct = ct.replace(/\s*\(\d+%\)?/g, '');
+    choicesHtml += '<div class="uworld-choice" data-letter="' + l + '"><span class="uworld-choice-letter">' + l + '.</span><span>' + ct + '</span></div>';
   }
+
   body.innerHTML = '<div class="uworld-stem">' + stem + '</div>'
-    + '<div class="uworld-choices">' + choicesHtml + '</div>';
+    + '<div class="uworld-choices" id="uworld-choices-wrap">' + choicesHtml + '</div>'
+    + '<button class="uworld-show-btn" id="uworld-show-btn" onclick="uworldRevealAnswer(\'' + correct + '\')">Show Answer</button>';
+}
+
+function uworldRevealAnswer(correct) {
+  var wrap = document.getElementById('uworld-choices-wrap');
+  var btn  = document.getElementById('uworld-show-btn');
+  if (!wrap) return;
+  var items = wrap.querySelectorAll('.uworld-choice');
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].getAttribute('data-letter') === correct) {
+      items[i].classList.add('correct');
+    }
+  }
+  if (btn) btn.style.display = 'none';
 }
 
 function toggleUWorldPanel() {
-  const body = document.getElementById('uworld-panel-body');
-  const chev = document.getElementById('uworld-panel-chevron');
+  var body = document.getElementById('uworld-panel-body');
+  var chev = document.getElementById('uworld-panel-chevron');
   if (!body) return;
-  const isOpen = body.style.display !== 'none';
+  var isOpen = body.style.display !== 'none';
   uworldPanelVisible = !isOpen;
   body.style.display = isOpen ? 'none' : 'block';
-  if (chev) chev.textContent = isOpen ? '▼' : '▲';
+  if (chev) chev.textContent = isOpen ? '\u25bc' : '\u25b2';
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────────────
@@ -3177,11 +3192,8 @@ async function copyQId(id) {
 
 async function loadAnkiCards(questionId) {
   if (!ankiDataLoaded) {
-    const desktopBody = document.getElementById('anki-panel-body');
-    const mobileBody  = document.getElementById('mobile-anki-body');
-    const spinner = '<div class="uw-spinner"><div class="uw-spinner-ring"></div>Loading cards…</div>';
-    if (desktopBody) desktopBody.innerHTML = spinner;
-    if (mobileBody)  mobileBody.innerHTML  = spinner;
+    var db = document.getElementById("anki-panel-body"); var mb = document.getElementById("mobile-anki-body"); var sp = '<div class="uw-spinner"><div class="uw-spinner-ring"></div>Loading cards…</div>';
+    if (db) db.innerHTML = sp; if (mb) mb.innerHTML = sp;
     await loadAnkiData();
   }
 
@@ -3206,7 +3218,7 @@ function renderAnkiPanel(questionId) {
   const empty = document.getElementById('anki-panel-empty');
 
   if (!ankiCardIndex) {
-    body.innerHTML = '<div class="uw-spinner"><div class="uw-spinner-ring"></div>Loading cards…</div>';
+    body.innerHTML = '<div class="anki-panel-empty"><div>Cards not loaded yet</div></div>';
     return;
   }
 
@@ -3733,8 +3745,7 @@ function showHome() {
 
 function hideHome() {
   document.getElementById('home-overlay').classList.remove('visible');
-  const toggleBtn = document.getElementById('sidebar-toggle');
-  if (toggleBtn) toggleBtn.style.display = '';
+  var tb = document.getElementById('sidebar-toggle'); if (tb) tb.style.display = '';
   document.body.classList.remove('home-open');
   // Restore body scroll exactly where it was
   document.body.style.overflow = '';
