@@ -2195,7 +2195,7 @@ async function loadUWorldData() {
   if (uworldLoaded || uworldLoading) return;
   uworldLoading = true;
   try {
-    const res = await fetch(UWORLD_URL);
+    const res = await fetch(UWORLD_URL + '?v=' + Date.now());
     if (!res.ok) throw new Error('failed');
     uworldData = await res.json();
   } catch(e) {
@@ -2222,6 +2222,16 @@ async function loadUWorldQuestion(questionId) {
     body.innerHTML = '<div class="uworld-empty">No UWorld question for ID ' + questionId + '</div>';
     return;
   }
+
+  // Clean stem: strip any metadata/orphan text before real clinical sentence
+  let stem = (q.stem || '');
+  // Find start of real clinical sentence: "A 45-year-old..." / "A man..." etc.
+  const stemMatch = stem.match(/(A \d|An \d|A male |A female |A man |A woman |A child |A boy |A girl |A neonate|A newborn|A patient |The patient )/);
+  if (stemMatch) {
+    stem = stem.slice(stemMatch.index);
+  }
+  // Strip leading punctuation/comma if still present
+  stem = stem.replace(/^[,;.\s]+/, '').trim();
 
   const correct = (q.correct || '').toUpperCase();
   const choices = Object.keys(q.choices || {}).sort();
