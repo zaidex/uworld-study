@@ -2198,39 +2198,26 @@ async function loadUWorldData() {
     const res = await fetch(UWORLD_URL);
     if (!res.ok) throw new Error('failed');
     uworldData = await res.json();
-  } catch(e) {
-    uworldData = {};
-  }
+  } catch(e) { uworldData = {}; }
   uworldLoaded = true;
   uworldLoading = false;
 }
 
 async function loadUWorldQuestion(questionId) {
   if (!uworldLoaded) await loadUWorldData();
-
   const body = document.getElementById('uworld-panel-body');
   const chev = document.getElementById('uworld-panel-chevron');
   if (!body) return;
-
   body.style.display = uworldPanelVisible ? 'block' : 'none';
   if (chev) chev.textContent = uworldPanelVisible ? '▲' : '▼';
-
   if (!uworldData) { body.innerHTML = '<div class="uworld-empty">Loading…</div>'; return; }
-
   const q = uworldData[String(questionId)];
-  if (!q) {
-    body.innerHTML = '<div class="uworld-empty">No UWorld question for ID ' + questionId + '</div>';
-    return;
-  }
+  if (!q) { body.innerHTML = '<div class="uworld-empty">No UWorld question for ID ' + questionId + '</div>'; return; }
 
-  // Clean stem: strip any metadata/orphan text before real clinical sentence
+  // Clean stem: find real clinical sentence start
   let stem = (q.stem || '');
-  // Find start of real clinical sentence: "A 45-year-old..." / "A man..." etc.
-  const stemMatch = stem.match(/(A \d|An \d|A male |A female |A man |A woman |A child |A boy |A girl |A neonate|A newborn|A patient |The patient )/);
-  if (stemMatch) {
-    stem = stem.slice(stemMatch.index);
-  }
-  // Strip leading punctuation/comma if still present
+  const sm = stem.match(/(A \d|An \d|A male |A female |A man |A woman |A child |A boy |A girl |A neonate|A newborn|A patient |The patient )/);
+  if (sm) stem = stem.slice(sm.index);
   stem = stem.replace(/^[,;.\s]+/, '').trim();
 
   const correct = (q.correct || '').toUpperCase();
@@ -2239,41 +2226,13 @@ async function loadUWorldQuestion(questionId) {
   for (let i = 0; i < choices.length; i++) {
     const l = choices[i];
     const isCorrect = l === correct;
-    // Strip trailing percentage like " [53%]" or " (53%)"
     let choiceText = (q.choices[l] || '');
-    // Strip percentage like [35%] or [53% — even if closing bracket missing
     choiceText = choiceText.replace(/\s*\[\d+%\]?/g, '');
     choiceText = choiceText.replace(/\s*\(\d+%\)?/g, '');
-    // Strip any explanation that bleeds in after the choice text.
-    // Explanations start with "Incorrect.", "Correct answer", or "Explanation:"
-    choiceText = choiceText.replace(/\s*(Incorrect\.?|Correct answer|Explanation:|This patient|\(Choice).*$/si, '');
-    choiceText = choiceText.trim();
     choicesHtml += '<div class="uworld-choice' + (isCorrect ? ' correct' : '') + '">'
       + '<span class="uworld-choice-letter">' + l + '.</span>'
-      + '<span>' + choiceText + '</span>'
-      + '</div>';
+      + '<span>' + choiceText + '</span></div>';
   }
-
-  // Clean stem: strip leading metadata like "Medicine System: Hematology & Oncology (...)"
-  let stem = (q.stem || '');
-  // If stem contains "System:" in first 150 chars, strip everything up to first real sentence.
-  // A real sentence starts with a capital letter followed by a lowercase letter,
-  // after a closing paren or after the metadata block.
-  if (stem.indexOf('System:') < 150 || stem.indexOf('Subject:') < 150) {
-    // Try to find the closing paren of the metadata block, then take what follows
-    const parenMatch = stem.match(/^.+?\([^)]+\)\s*/);
-    if (parenMatch) {
-      stem = stem.slice(parenMatch[0].length);
-    } else {
-      // No paren — just strip up to first sentence (capital + space pattern after a colon region)
-      const sentenceMatch = stem.match(/^.{0,200}?(?=[A-Z][a-z]{2})/s);
-      if (sentenceMatch && sentenceMatch.index > 5) {
-        stem = stem.slice(sentenceMatch[0].length);
-      }
-    }
-  }
-  stem = stem.trim();
-
   body.innerHTML = '<div class="uworld-stem">' + stem + '</div>'
     + '<div class="uworld-choices">' + choicesHtml + '</div>';
 }
