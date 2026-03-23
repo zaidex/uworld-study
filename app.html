@@ -2195,7 +2195,7 @@ async function loadUWorldData() {
   if (uworldLoaded || uworldLoading) return;
   uworldLoading = true;
   try {
-    const res = await fetch(UWORLD_URL + '?v=' + Date.now());
+    const res = await fetch(UWORLD_URL);
     if (!res.ok) throw new Error('failed');
     uworldData = await res.json();
   } catch(e) {
