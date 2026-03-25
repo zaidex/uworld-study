@@ -1709,36 +1709,31 @@ function saveProgress() {
 }
 
 async function syncToCloud() {
-  if (isSyncing || !authSession) return;
-  isSyncing = true;
-  setSyncStatus('syncing');
+  if (!authSession) return;
+  const payload = {
+    user_id: authSession.user.id,
+    email: authSession.user.email,
+    progress: JSON.stringify(userProgress),
+    flags: JSON.stringify(flaggedQuestions),
+    notes: JSON.stringify(userNotes),
+    cq_session: JSON.stringify(currentQuestionSession),
+    updated_at: new Date().toISOString()
+  };
+
   try {
-    const uid = getUserId();
-    const body = {
-      auth_user_id: uid,
-      done, flags, notes, images, cq_session: (typeof cqSession !== "undefined" ? cqSession : {}),
-      daily_counts: getDailyCounts(),
-      highlights,
-      font_size: fontSizeIdx,
-      updated_at: new Date().toISOString()
-    };
-    // UPSERT: insert if no row, update if row exists
-    const upsertBody = { ...body, user_id: uid };
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress`, {
-      method: 'POST',
-      headers: { ...getHeaders(), 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify(upsertBody)
+    await fetch(`${SUPABASE_URL}/rest/v1/progress`, {
+      method: 'POST', // Use POST + merge-duplicates for UPSERT
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${authSession.access_token}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates' 
+      },
+      body: JSON.stringify(payload)
     });
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error('Sync error response:', errText);
-      throw new Error(errText);
-    }
-    setSyncStatus('synced');
-  } catch(e) {
-    setSyncStatus('error');
-    console.error('Sync error:', e);
-  } finally { isSyncing = false; }
+  } catch (err) {
+    console.error("Sync failed:", err);
+  }
 }
 
 async function loadFromCloud() {
