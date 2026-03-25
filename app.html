@@ -1709,31 +1709,30 @@ function saveProgress() {
 }
 
 async function syncToCloud() {
-  if (!authSession) return;
-  const payload = {
-    user_id: authSession.user.id,
-    email: authSession.user.email,
-    progress: JSON.stringify(userProgress),
-    flags: JSON.stringify(flaggedQuestions),
-    notes: JSON.stringify(userNotes),
-    cq_session: JSON.stringify(currentQuestionSession),
-    updated_at: new Date().toISOString()
-  };
-
+  if (isSyncing || !authSession) return;
+  isSyncing = true;
+  setSyncStatus('syncing');
   try {
-    await fetch(`${SUPABASE_URL}/rest/v1/progress`, {
-      method: 'POST', // Use POST + merge-duplicates for UPSERT
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${authSession.access_token}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates' 
-      },
-      body: JSON.stringify(payload)
+    const uid = getUserId();
+    const body = {
+      auth_user_id: uid,
+      done, flags, notes, images,
+      daily_counts: getDailyCounts(),
+      highlights,
+      font_size: fontSizeIdx,
+      updated_at: new Date().toISOString()
+    };
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?auth_user_id=eq.${uid}`, {
+      method: 'PATCH',
+      headers: getHeaders(),
+      body: JSON.stringify(body)
     });
-  } catch (err) {
-    console.error("Sync failed:", err);
-  }
+    if (!res.ok) throw new Error(await res.text());
+    setSyncStatus('synced');
+  } catch(e) {
+    setSyncStatus('error');
+    console.error('Sync error:', e);
+  } finally { isSyncing = false; }
 }
 
 async function loadFromCloud() {
@@ -1777,30 +1776,14 @@ async function loadFromCloud() {
         localStorage.setItem(HIGHLIGHTS_KEY, JSON.stringify(highlights));
       } catch(e) {}
       console.log('loadFromCloud: done keys loaded', Object.keys(done).length);
-      if (rows[0].cq_session && typeof cqSession !== "undefined") { cqSession = rows[0].cq_session; }
     } else {
-      // No row — clear local data then create row immediately
+      // New account — clear any leftover local progress from a previous user
       done = {}; flags = {}; notes = {}; images = {}; highlights = {}; reviewDone = {};
       try {
         localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(FLAGS_KEY);
         localStorage.removeItem(NOTES_KEY);   localStorage.removeItem(IMAGES_KEY);
         localStorage.removeItem(HIGHLIGHTS_KEY); localStorage.removeItem(REVIEW_DONE_KEY);
       } catch(e) {}
-      // Create the row immediately so future syncs work
-      try {
-        const uid = getUserId();
-        const newRow = {
-          auth_user_id: uid, user_id: uid,
-          done: {}, flags: {}, notes: {}, images: {}, highlights: {},
-          cq_session: {}, daily_counts: {}, font_size: fontSizeIdx,
-          updated_at: new Date().toISOString()
-        };
-        await fetch(`${SUPABASE_URL}/rest/v1/progress`, {
-          method: 'POST',
-          headers: { ...getHeaders(), 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-          body: JSON.stringify(newRow)
-        });
-      } catch(e) { console.error('Row create error:', e); }
     }
     setSyncStatus('synced');
   } catch(e) {
@@ -2934,8 +2917,6 @@ function nextQ() {
     renderSidebar(document.getElementById('search-input').value);
   } else {
     currentQ++;
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    const mc = document.getElementById('main-content'); if (mc) mc.scrollTop = 0;
     renderQuestion();
     renderSidebar(document.getElementById('search-input').value);
   }
@@ -2945,8 +2926,6 @@ function nextQ() {
 function prevQ() {
   if (currentQ === 0) return;
   currentQ--;
-  window.scrollTo({ top: 0, behavior: 'instant' });
-  const mc = document.getElementById('main-content'); if (mc) mc.scrollTop = 0;
   renderQuestion();
   renderSidebar(document.getElementById('search-input').value);
   saveLastSession('study', currentSubsec, null, currentQ);
@@ -3075,8 +3054,6 @@ let ankiCardIndex = null;
 let ankiDataLoading = false;
 let ankiDataLoaded = false;
 let ankiPanelVisible = true;
-let ankiCardCollapse = {};  // {cardIdx: true/false} — persists across questions
-let ankiFieldCollapse = {}; // {fieldId_key: true/false} — persists field collapse
 
 function toggleDesktopAnkiPanel() {
   const body = document.getElementById('anki-panel-body');
@@ -3268,28 +3245,24 @@ function renderAnkiPanel(questionId) {
     { key: 'sketchy',             label: 'Sketchy',              cls: 'sketchy'   },
   ];
 
-  body.innerHTML = cards.map((card, ci) => {
-    const cardOpen = ankiCardCollapse[ci] !== false; // default open
+  body.innerHTML = cards.map((card, idx) => {
     const fields = FIELDS.map(f => {
       const val = card[f.key];
       if (!val || !val.trim()) return '';
-      const fieldId = `af-${ci}-${f.key}`;
-      const fieldKey = f.key;
-      const fOpen = ankiFieldCollapse[fieldKey] !== false; // default open
+      const fieldId = `af-${idx}-${f.key}`;
       return `<div class="anki-field">
-        <div class="anki-field-header" onclick="toggleAnkiField('${fieldId}','${fieldKey}')">
+        <div class="anki-field-header" onclick="toggleAnkiField('${fieldId}')">
           <span class="anki-field-label ${f.cls}">${f.label}</span>
-          <span class="anki-field-chevron ${fOpen?'open':''}" id="${fieldId}-chev">${fOpen?'▼':'▶'}</span>
+          <span class="anki-field-chevron open" id="${fieldId}-chev">▼</span>
         </div>
-        <div class="anki-field-body ${fOpen?'open':''}" id="${fieldId}">${val}</div>
+        <div class="anki-field-body open" id="${fieldId}">${val}</div>
       </div>`;
     }).join('');
 
     if (!fields.trim()) return '';
-    const cardId = `anki-card-${ci}`;
     return `<div class="anki-card-item">
-      ${cards.length > 1 ? `<div class="anki-card-num" onclick="toggleAnkiCard(${ci},'${cardId}')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between"><span><span style="color:var(--accent);opacity:0.8">▣</span> CARD ${ci+1} / ${cards.length}</span><span id="${cardId}-chev" style="font-size:0.7rem;color:var(--muted)">${cardOpen?'▼':'▶'}</span></div>` : ''}
-      <div id="${cardId}" style="display:${cardOpen?'block':'none'}">${fields}</div>
+      ${cards.length > 1 ? `<div class="anki-card-num"><span style="color:var(--accent);opacity:0.8">▣</span> CARD ${idx+1} / ${cards.length}</div>` : ''}
+      ${fields}
     </div>`;
   }).filter(Boolean).join('');
 }
@@ -3313,17 +3286,15 @@ function renderMobileAnkiPanel(questionId) {
     { key: 'additionalResources', label: 'Additional Resources', cls: 'resources' },
     { key: 'sketchy',             label: 'Sketchy',              cls: 'sketchy'   },
   ];
-  body.innerHTML = cards.map((card, ci) => {
-    const cardOpen = ankiCardCollapse[ci] !== false;
+  body.innerHTML = cards.map((card, idx) => {
     const fields = FIELDS.map(f => {
       const val = card[f.key];
       if (!val || !val.trim()) return '';
-      const fid = `maf-${ci}-${f.key}`;
-      const fOpen = ankiFieldCollapse[f.key] !== false;
+      const fid = `maf-${idx}-${f.key}`;
       return `<div class="anki-field">
-        <div class="anki-field-header" onclick="toggleAnkiField('${fid}','${f.key}')">
+        <div class="anki-field-header" onclick="toggleAnkiField('${fid}')">
           <span class="anki-field-label ${f.cls}">${f.label}</span>
-          <span class="anki-field-chevron ${fOpen?'open':''}" id="${fid}-chev">${fOpen?'▼':'▶'}</span>
+          <span class="anki-field-chevron open" id="${fid}-chev">▼</span>
         </div>
         <div class="anki-field-body open" id="${fid}">${val}</div>
       </div>`;
@@ -3346,24 +3317,12 @@ function toggleMobileAnkiPanel(questionId) {
   if (chev) chev.textContent = isOpen ? '▼' : '▲';
 }
 
-function toggleAnkiField(id, fieldKey) {
+function toggleAnkiField(id) {
   const body = document.getElementById(id);
   const chev = document.getElementById(id + '-chev');
   if (!body) return;
   const isOpen = body.classList.toggle('open');
-  if (chev) { chev.classList.toggle('open', isOpen); chev.textContent = isOpen ? '▼' : '▶'; }
-  // Persist field collapse state across questions
-  if (fieldKey) ankiFieldCollapse[fieldKey] = isOpen;
-}
-
-function toggleAnkiCard(ci, cardId) {
-  const body = document.getElementById(cardId);
-  const chev = document.getElementById(cardId + '-chev');
-  if (!body) return;
-  const isOpen = body.style.display === 'none';
-  body.style.display = isOpen ? 'block' : 'none';
-  if (chev) chev.textContent = isOpen ? '▼' : '▶';
-  ankiCardCollapse[ci] = isOpen;
+  if (chev) chev.classList.toggle('open', isOpen);
 }
 function updateGlobalProgress() {
   const dc = Object.keys(done).length;
