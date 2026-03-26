@@ -89,6 +89,7 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
   background: var(--surface2); border: 1px solid var(--border);
   border-radius: 10px; margin-bottom: 0.75rem; overflow: hidden;
 }
+.card-body-collapsed { display: none !important; }
 .anki-card-item:last-child { margin-bottom: 0; }
 .anki-card-num {
   font-size: 0.6rem; font-family: 'IBM Plex Mono', monospace;
@@ -1714,6 +1715,7 @@ async function syncToCloud() {
   setSyncStatus('syncing');
   try {
     const uid = getUserId();
+
     const body = {
       auth_user_id: uid,
       done, flags, notes, images,
@@ -1731,17 +1733,16 @@ async function syncToCloud() {
     if (!res.ok) throw new Error(await res.text());
     setSyncStatus('synced');
   } catch(e) {
-    setSyncStatus('error');
-    console.error('Sync error:', e);
+    setSyncStatus('error', e.message);
+    console.error('[SYNC] error:', e);
   } finally { isSyncing = false; }
 }
 
 async function loadFromCloud() {
-  if (!authSession) { console.log('loadFromCloud: no session'); return; }
+  if (!authSession) { console.log('[LOAD] no session'); return; }
   setSyncStatus('syncing');
   try {
     const uid = getUserId();
-    console.log('loadFromCloud: fetching for uid', uid);
     const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?auth_user_id=eq.${uid}&select=done,flags,notes,images,daily_counts,highlights,font_size,cq_session&order=updated_at.desc&limit=1`, { headers: getHeaders() });
     console.log('loadFromCloud: status', res.status);
     const text = await res.text();
@@ -1803,7 +1804,7 @@ async function loadFromCloud() {
     }
     setSyncStatus('synced');
   } catch(e) {
-    setSyncStatus('error');
+    setSyncStatus('error', e.message);
     console.error('Load error:', e);
   }
 }
@@ -1838,12 +1839,12 @@ function loadProgress() {
 }
 
 // ── SYNC STATUS INDICATOR ─────────────────────────────────────────────────────
-function setSyncStatus(state) {
+function setSyncStatus(state, msg) {
   const el = document.getElementById('sync-status');
   if (!el) return;
   if (state === 'syncing') { el.textContent = '☁ Syncing…';  el.style.color = 'var(--muted)'; }
   if (state === 'synced')  { el.textContent = '☁ Synced ✓'; el.style.color = 'var(--green)'; setTimeout(() => { el.textContent = ''; }, 2500); }
-  if (state === 'error')   { el.textContent = '☁ Sync failed'; el.style.color = 'var(--danger)'; }
+  if (state === 'error')   { el.textContent = '☁ Sync failed' + (msg ? ': ' + msg.slice(0,80) : ''); el.style.color = 'var(--danger)'; }
 }
 
 function flagCountForSubsec(si) {
@@ -2921,6 +2922,7 @@ function reviewUndo() {
 }
 
 function nextQ() {
+  window._lastActivityTime = Date.now();
   const sec = ALL_SUBSECS[currentSubsec];
   const isLast = currentQ === sec.questions.length - 1;
   const key = `${currentSubsec}-${currentQ}`;
@@ -2942,6 +2944,7 @@ function nextQ() {
 }
 
 function prevQ() {
+  window._lastActivityTime = Date.now();
   if (currentQ === 0) return;
   currentQ--;
   window.scrollTo({ top: 0, behavior: 'instant' });
@@ -3074,7 +3077,7 @@ let ankiCardIndex = null;
 let ankiDataLoading = false;
 let ankiDataLoaded = false;
 let ankiPanelVisible = true;
-let ankiCardCollapse = {};  // {cardIdx: true/false} — persists across questions
+let ankiCardCollapse = {};  // not persisted — cards always open per question
 let ankiFieldCollapse = {}; // {fieldId_key: true/false} — persists field collapse
 
 function toggleDesktopAnkiPanel() {
@@ -3221,6 +3224,7 @@ async function copyQId(id) {
 }
 
 async function loadAnkiCards(questionId) {
+  ankiCardCollapse = {}; // reset per question — cards always start open
   if (!ankiDataLoaded) {
     var db = document.getElementById("anki-panel-body"); var mb = document.getElementById("mobile-anki-body"); var sp = '<div class="uw-spinner"><div class="uw-spinner-ring"></div>Loading cards…</div>';
     if (db) db.innerHTML = sp; if (mb) mb.innerHTML = sp;
@@ -3230,6 +3234,7 @@ async function loadAnkiCards(questionId) {
   // Render content into both panels
   renderAnkiPanel(questionId);
   renderMobileAnkiPanel(questionId);
+
 
   // Apply the saved open/closed state
   const desktopBody = document.getElementById('anki-panel-body');
@@ -3244,6 +3249,7 @@ async function loadAnkiCards(questionId) {
 }
 
 function renderAnkiPanel(questionId) {
+  console.log('[RENDER] renderAnkiPanel for', questionId);
   const body = document.getElementById('anki-panel-body');
   const empty = document.getElementById('anki-panel-empty');
 
@@ -3268,7 +3274,6 @@ function renderAnkiPanel(questionId) {
   ];
 
   body.innerHTML = cards.map((card, ci) => {
-    const cardOpen = ankiCardCollapse[ci] !== false; // default open
     const fields = FIELDS.map(f => {
       const val = card[f.key];
       if (!val || !val.trim()) return '';
@@ -3285,10 +3290,10 @@ function renderAnkiPanel(questionId) {
     }).join('');
 
     if (!fields.trim()) return '';
-    const cardId = `anki-card-${ci}`;
+    const cardBodyId = `anki-card-${questionId}-${ci}`;
     return `<div class="anki-card-item">
-      ${cards.length > 1 ? `<div class="anki-card-num" onclick="toggleAnkiCard(${ci},'${cardId}')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between"><span><span style="color:var(--accent);opacity:0.8">▣</span> CARD ${ci+1} / ${cards.length}</span><span id="${cardId}-chev" style="font-size:0.7rem;color:var(--muted)">${cardOpen?'▼':'▶'}</span></div>` : ''}
-      <div id="${cardId}" style="display:${cardOpen?'block':'none'}">${fields}</div>
+      ${cards.length > 1 ? `<div class="anki-card-num" onclick="toggleAnkiCard('${cardBodyId}')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between"><span><span style="color:var(--accent);opacity:0.8">▣</span> CARD ${ci+1} / ${cards.length}</span><span id="${cardBodyId}-chev" style="font-size:0.7rem;color:var(--muted)">▼</span></div>` : ''}
+      <div id="${cardBodyId}">${fields}</div>
     </div>`;
   }).filter(Boolean).join('');
 }
@@ -3313,7 +3318,6 @@ function renderMobileAnkiPanel(questionId) {
     { key: 'sketchy',             label: 'Sketchy',              cls: 'sketchy'   },
   ];
   body.innerHTML = cards.map((card, ci) => {
-    const cardOpen = ankiCardCollapse[ci] !== false;
     const fields = FIELDS.map(f => {
       const val = card[f.key];
       if (!val || !val.trim()) return '';
@@ -3328,9 +3332,10 @@ function renderMobileAnkiPanel(questionId) {
       </div>`;
     }).join('');
     if (!fields.trim()) return '';
+    const mCardBodyId = `manki-card-${questionId}-${ci}`;
     return `<div class="anki-card-item" style="margin-bottom:0.6rem">
-      ${cards.length > 1 ? `<div class="anki-card-num"><span style="color:var(--accent);opacity:0.8">▣</span> CARD ${idx+1} / ${cards.length}</div>` : ''}
-      ${fields}
+      ${cards.length > 1 ? `<div class="anki-card-num" onclick="toggleAnkiCard('${mCardBodyId}')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between"><span><span style="color:var(--accent);opacity:0.8">▣</span> CARD ${ci+1} / ${cards.length}</span><span id="${mCardBodyId}-chev" style="font-size:0.7rem;color:var(--muted)">▼</span></div>` : ''}
+      <div id="${mCardBodyId}">${fields}</div>
     </div>`;
   }).filter(Boolean).join('');
 }
@@ -3355,14 +3360,13 @@ function toggleAnkiField(id, fieldKey) {
   if (fieldKey) ankiFieldCollapse[fieldKey] = isOpen;
 }
 
-function toggleAnkiCard(ci, cardId) {
-  const body = document.getElementById(cardId);
-  const chev = document.getElementById(cardId + '-chev');
+function toggleAnkiCard(cardBodyId) {
+  console.log('[TOGGLE] called for', cardBodyId, new Error().stack.split('\n')[2]);
+  const body = document.getElementById(cardBodyId);
+  const chev = document.getElementById(cardBodyId + '-chev');
   if (!body) return;
-  const isOpen = body.style.display === 'none';
-  body.style.display = isOpen ? 'block' : 'none';
-  if (chev) chev.textContent = isOpen ? '▼' : '▶';
-  ankiCardCollapse[ci] = isOpen;
+  const isHidden = body.classList.toggle('card-body-collapsed');
+  if (chev) chev.textContent = isHidden ? '▶' : '▼';
 }
 function updateGlobalProgress() {
   const dc = Object.keys(done).length;
@@ -4182,6 +4186,17 @@ async function launchApp() {
 
   checkAnki();
   if (location.protocol !== 'https:') setInterval(checkAnki, 15000);
+
+  // Activity-based token refresh — every 50 min if user was active in last 60 min
+  window._lastActivityTime = Date.now();
+  setInterval(async () => {
+    const inactiveMins = (Date.now() - window._lastActivityTime) / 60000;
+    if (inactiveMins > 60) return;
+    if (!authSession?.refresh_token) return;
+    console.log('[SESSION] Proactive refresh, inactive', Math.round(inactiveMins), 'min');
+    const ok = await refreshSession();
+    if (!ok) setSyncStatus('error', 'Session expired — please reload');
+  }, 50 * 60 * 1000);
 
   // Load this user's progress from cloud
   await loadFromCloud();
