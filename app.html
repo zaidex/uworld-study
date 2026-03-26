@@ -1436,7 +1436,7 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
 
 <div id="anki-status" style="display:none"><div class="status-dot"></div><span id="anki-text">Anki: checking…</span></div>
 <div id="toast"></div>
-<div id="img-lightbox" onclick="closeLightbox()"><button id="img-lightbox-close" onclick="closeLightbox()">✕</button><img id="img-lightbox-img" src="" alt=""></div>
+<div id="img-lightbox" onclick="closeLightbox()"><button id="img-lightbox-close" onclick="closeLightbox()"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><img id="img-lightbox-img" src="" alt=""></div>
 
 <!-- ── HOME PAGE OVERLAY ── -->
 <div id="home-overlay" class="visible">
@@ -1492,8 +1492,8 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
 
 <!-- Mobile prev/next bar (shown only when studying) -->
 <div class="mobile-q-bar" id="mobile-q-bar" style="display:none">
-  <button class="mobile-q-prev" id="mobile-q-prev" onclick="prevQ()">← Prev</button>
-  <button class="mobile-q-next" id="mobile-q-next" onclick="nextQ()">Next →</button>
+  <button class="mobile-q-prev" id="mobile-q-prev" onclick="prevQ()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Prev</button>
+  <button class="mobile-q-next" id="mobile-q-next" onclick="nextQ()">Next <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
 </div>
 
 <!-- Mobile bottom navigation -->
@@ -1570,7 +1570,7 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
   <button class="hl-swatch hl-sw-green"  data-color="green"  title="Green"></button>
   <button class="hl-swatch hl-sw-blue"   data-color="blue"   title="Blue"></button>
   <button class="hl-swatch hl-sw-pink"   data-color="pink"   title="Pink"></button>
-  <button class="hl-erase-btn" id="hl-erase" title="Remove highlight">✕</button>
+  <button class="hl-erase-btn" id="hl-erase" title="Remove highlight"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
 </div>
 
 <script>
@@ -2147,7 +2147,7 @@ function renderQuestion() {
 
   let html = `<div class="q-view-wrap">
     <div class="sec-header">
-      <button class="mobile-back-btn" onclick="exitReviewMode(false);mobileNav('sections')">← Sections</button>
+      <button class="mobile-back-btn" onclick="exitReviewMode(false);mobileNav('sections')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Sections</button>
       ${reviewMode ? `
         <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;flex-wrap:wrap">
           <span style="font-size:0.68rem;font-family:'IBM Plex Mono',monospace;padding:0.2rem 0.6rem;border-radius:99px;background:rgba(167,139,250,0.12);color:#a78bfa;border:1px solid rgba(167,139,250,0.3)">REVIEW MODE</span>
@@ -2162,7 +2162,7 @@ function renderQuestion() {
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:0.8rem;flex-wrap:wrap">
         <div class="sec-title">${sec.subsecKey}</div>
-        ${!reviewMode ? `<button class="btn-reset-subsec" onclick="resetSubsec()">↺ Reset section</button>` : ''}
+        ${!reviewMode ? `<button class="btn-reset-subsec" onclick="resetSubsec()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5"/></svg> Reset section</button>` : ''}
       </div>
       <div class="sec-prog-row">
         <div class="sec-prog-bar"><div class="sec-prog-fill" style="width:${displayPct}%;background:${displayColor}"></div></div>
@@ -2180,8 +2180,8 @@ function renderQuestion() {
         ${q.topic && !q.objective.toLowerCase().startsWith(q.topic.toLowerCase().slice(0,12)) ? `<div class="q-badge q-topic-badge">${q.topic}</div>` : ''}
         ${!reviewMode && isDone ? '<div class="q-badge q-done-badge">✓ Done</div>' : ''}
         ${getDiff(currentSubsec,currentQ) ? `<div class="q-badge diff-badge-l${getDiff(currentSubsec,currentQ)}">L${getDiff(currentSubsec,currentQ)}</div>` : ''}
-        ${!reviewMode && isDone ? `<button class="btn-reset-q" onclick="unseeQ()" title="Reset this question">↺ Reset</button>` : ''}
-        <button class="q-id-copy-btn" onclick="copyQId('${q.id}')" title="Copy ID">${q.id} ⧉</button>
+        ${!reviewMode && isDone ? `<button class="btn-reset-q" onclick="unseeQ()" title="Reset this question"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-5"/></svg></button>` : ''}
+        <button class="q-id-copy-btn" onclick="copyQId('${q.id}')" title="Copy ID">${q.id} <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
       </div>
       <div class="q-objective">${q.objective}</div>
       <div class="q-footer">
@@ -2194,7 +2194,7 @@ function renderQuestion() {
           <button class="btn-review-l2${getDiff(currentSubsec,currentQ)===2?' active-l2':''}" onclick="reviewAssign(2)">L2</button>
           <button class="btn-review-l3${getDiff(currentSubsec,currentQ)===3?' active-l3':''}" onclick="reviewAssign(3)">L3</button>
           <button class="btn-graduate" onclick="graduateQ()">Graduate ✓</button>
-          ${reviewHistory.length>0?`<button class="btn-review-undo" onclick="reviewUndo()">↩</button>`:''}
+          ${reviewHistory.length>0?`<button class="btn-review-undo" onclick="reviewUndo()"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></button>`:''}
           <span class="review-pos-text">${reviewPos+1} / ${reviewOriginalCount}</span>
         </div>` : `
         <div class="diff-row">
@@ -2204,8 +2204,8 @@ function renderQuestion() {
           <button class="btn-diff${getDiff(currentSubsec,currentQ)===3?' active-l3':''}" onclick="setDiff(3)">L3</button>
         </div>
         <div class="q-nav">
-          <button class="btn-prev" onclick="prevQ()" ${currentQ===0?'disabled':''}>← Prev</button>
-          <button class="btn-next" onclick="nextQ()">${isLast ? '✓ Finish' : 'Next →'}</button>
+          <button class="btn-prev" onclick="prevQ()" ${currentQ===0?'disabled':''}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Prev</button>
+          <button class="btn-next" onclick="nextQ()">${isLast ? 'Finish' : 'Next <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>'}</button>
         </div>`}
       </div>
     </div>
@@ -2213,7 +2213,7 @@ function renderQuestion() {
     <div class="q-notes-panel">
       <div class="q-notes-header" onclick="toggleNotesPanel()">
         <span class="q-notes-title${hasContent?' has-content':''}">NOTES${hasContent?' ●':''}</span>
-        <span style="font-size:0.7rem;color:var(--muted)" id="notes-chevron">▼</span>
+        <span style="color:var(--muted);display:flex;align-items:center" id="notes-chevron"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
       </div>
       <div class="q-notes-body" id="notes-body" style="${hasContent?'':'display:none'}">
         <textarea class="q-notes-textarea" id="q-note-input" placeholder="Add notes for this question…" oninput="saveNote(this.value)">${noteVal}</textarea>
@@ -2226,7 +2226,7 @@ function renderQuestion() {
             ${imgList.map((src,i) => `
               <div class="q-img-thumb" onclick="openLightbox('${noteKey}-${i}')">
                 <img src="${src}" alt="note image">
-                <button class="q-img-del" onclick="event.stopPropagation();deleteImg(${i})">✕</button>
+                <button class="q-img-del" onclick="event.stopPropagation();deleteImg(${i})"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
               </div>`).join('')}
           </div>
         </div>
@@ -2240,7 +2240,10 @@ function renderQuestion() {
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:0.3rem"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
           ANKI CARDS
         </span>
-        <span style="font-size:0.7rem;color:var(--muted)" id="mobile-anki-chevron">▲</span>
+        <div style="display:flex;align-items:center;gap:0.4rem">
+          <button id="mobile-anki-settings-btn" onclick="event.stopPropagation();toggleAnkiSettingsBtn()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:0.8rem;padding:0.2rem 0.35rem;border-radius:5px;line-height:1;opacity:0.75;transition:all 0.15s" onmouseenter="this.style.opacity='1';this.style.borderColor='var(--accent)'" onmouseleave="this.style.opacity='0.75';this.style.borderColor='var(--border)'" title="Field settings">⚙</button>
+          <span style="font-size:0.7rem;color:var(--muted)" id="mobile-anki-chevron" style="display:flex;align-items:center;color:var(--muted)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
+        </div>
       </div>
       <div id="mobile-anki-body" style="display:block"></div>
     </div>
@@ -2255,7 +2258,7 @@ function renderQuestion() {
           </div>
           <div style="display:flex;align-items:center;gap:0.6rem">
             <button id="anki-settings-btn" onclick="event.stopPropagation();toggleAnkiSettingsBtn()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:0.82rem;padding:0.25rem 0.45rem;border-radius:5px;line-height:1;transition:all 0.15s;opacity:0.75" onmouseenter="this.style.opacity='1';this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseleave="if(!document.getElementById('anki-settings-overlay').classList.contains('open')){this.style.opacity='0.75';this.style.borderColor='var(--border)';this.style.color='var(--text)'}" title="Field settings">⚙</button>
-            <span id="desktop-anki-chevron" style="font-size:0.7rem;color:var(--muted)">▲</span>
+            <span id="desktop-anki-chevron" style="display:flex;align-items:center;color:var(--muted)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
           </div>
         </div>
         <div class="anki-panel-body" id="anki-panel-body"></div>
@@ -2299,7 +2302,7 @@ function renderQuestion() {
       const nav = document.querySelector('.mobile-nav');
       if (nav) nav.style.display = 'none';
       if (mprev) mprev.disabled = (currentQ === 0);
-      if (mnext) mnext.textContent = isLast ? '✓ Finish' : 'Next →';
+      if (mnext) mnext.textContent = isLast ? 'Finish' : 'Next <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
     }
   } else if (bar) {
     bar.style.display = 'none';
@@ -2448,7 +2451,7 @@ function switchTab(tab) {
       renderQuestion();
     } else {
       // No active review — show empty state
-      if (main) main.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-hint">Select a level to start reviewing</div></div>`;
+      if (main) main.innerHTML = `<div class="empty-state"><div class="empty-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div><div class="empty-hint">Select a level to start reviewing</div></div>`;
     }
     renderReviewSidebar();
   }
@@ -2515,7 +2518,7 @@ function renderReviewSidebar() {
   updateReviewBadge();
 
   if (totalDiffCount() === 0) {
-    panel.innerHTML = `<div class="review-empty"><div class="review-empty-icon">📋</div><div style="font-size:0.78rem">No questions assigned yet.<br>Use L1 / L2 / L3 on any question.</div></div>`;
+    panel.innerHTML = `<div class="review-empty"><div class="review-empty-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div><div style="font-size:0.78rem">No questions assigned yet.<br>Use L1 / L2 / L3 on any question.</div></div>`;
     return;
   }
 
@@ -3132,7 +3135,7 @@ async function openInAnki(id) {
       fl.classList.add('show');
       setTimeout(() => { fl.classList.remove('show'); fl.textContent = 'Opened in Anki ✓'; }, 4000);
     }
-    showToast(`📋 Copied: ${searchQuery} — paste in AnkiWeb search`);
+    showToast(`Copied: ${searchQuery} — paste in AnkiWeb search`);
     return;
   }
 
@@ -3160,6 +3163,17 @@ let ankiDataLoading = false;
 let ankiDataLoaded = false;
 let ankiPanelVisible = true;
 let ankiCardCollapse = {};
+
+// ── SVG icon helpers (used instead of text chevrons) ─────────────────────────
+const SVG_CHEVRON_DOWN  = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+const SVG_CHEVRON_RIGHT = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+const SVG_CHEVRON_UP    = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>';
+function setChevron(el, dir) {
+  if (!el) return;
+  if (dir === 'down')  el.innerHTML = SVG_CHEVRON_DOWN;
+  if (dir === 'right') el.innerHTML = SVG_CHEVRON_RIGHT;
+  if (dir === 'up')    el.innerHTML = SVG_CHEVRON_UP;
+}
 // Which anki fields are enabled — persisted to cloud
 const ANKI_ALL_FIELDS = [
   { key: 'text',                label: 'Text'                 },
@@ -3184,14 +3198,14 @@ function toggleDesktopAnkiPanel() {
   const isOpen = body.style.display !== 'none';
   ankiPanelVisible = !isOpen;
   body.style.display = isOpen ? 'none' : 'block';
-  if (chev) chev.textContent = isOpen ? '▼' : '▲';
+  if (chev) setChevron(chev, isOpen ? 'down' : 'up');
 }
 
 function hideDesktopAnkiPanel() {
   const body = document.getElementById('anki-panel-body');
   const chev = document.getElementById('desktop-anki-chevron');
   if (body) body.style.display = 'none';
-  if (chev) chev.textContent = '▼';
+  if (chev) setChevron(chev, 'down');
   ankiPanelVisible = false;
 }
 
@@ -3342,9 +3356,9 @@ async function loadAnkiCards(questionId) {
   const mobileChev = document.getElementById('mobile-anki-chevron');
 
   if (desktopBody) desktopBody.style.display = ankiPanelVisible ? 'block' : 'none';
-  if (desktopChev) desktopChev.textContent = ankiPanelVisible ? '▲' : '▼';
+  if (desktopChev) setChevron(desktopChev, ankiPanelVisible ? 'up' : 'down');
   if (mobileBody) mobileBody.style.display = ankiPanelVisible ? 'block' : 'none';
-  if (mobileChev) mobileChev.textContent = ankiPanelVisible ? '▲' : '▼';
+  if (mobileChev) setChevron(mobileChev, ankiPanelVisible ? 'up' : 'down');
 }
 
 function renderAnkiPanel(questionId) {
@@ -3359,7 +3373,7 @@ function renderAnkiPanel(questionId) {
   const cards = ankiCardIndex[String(questionId)] || [];
 
   if (!cards.length) {
-    body.innerHTML = `<div class="anki-panel-empty"><div style="font-size:1.5rem;margin-bottom:0.5rem;opacity:0.3">📭</div><div>No Anki cards found for ID ${questionId}</div></div>`;
+    body.innerHTML = `<div class="anki-panel-empty"><div style="font-size:1.5rem;margin-bottom:0.5rem;opacity:0.3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg></div><div>No Anki cards found for ID ${questionId}</div></div>`;
     return;
   }
 
@@ -3383,7 +3397,7 @@ function renderAnkiPanel(questionId) {
       return `<div class="anki-field">
         <div class="anki-field-header" onclick="toggleAnkiField('${fieldId}','${fieldKey}')">
           <span class="anki-field-label ${f.cls}">${f.label}</span>
-          <span class="anki-field-chevron ${fOpen?'open':''}" id="${fieldId}-chev">${fOpen?'▼':'▶'}</span>
+          <span class="anki-field-chevron ${fOpen?'open':''}" id="${fieldId}-chev">${fOpen?SVG_CHEVRON_DOWN:SVG_CHEVRON_RIGHT}</span>
         </div>
         <div class="anki-field-body ${fOpen?'open':''}" id="${fieldId}">${val}</div>
       </div>`;
@@ -3392,7 +3406,7 @@ function renderAnkiPanel(questionId) {
     if (!fields.trim()) return '';
     const cardBodyId = `anki-card-${questionId}-${ci}`;
     return `<div class="anki-card-item">
-      ${cards.length > 1 ? `<div class="anki-card-num" onclick="toggleAnkiCard('${cardBodyId}')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between"><span><span style="color:var(--accent);opacity:0.8">▣</span> CARD ${ci+1} / ${cards.length}</span><span id="${cardBodyId}-chev" style="font-size:0.7rem;color:var(--muted)">▼</span></div>` : ''}
+      ${cards.length > 1 ? `<div class="anki-card-num" onclick="toggleAnkiCard('${cardBodyId}')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between"><span><span style="color:var(--accent);opacity:0.8"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span> CARD ${ci+1} / ${cards.length}</span><span id="${cardBodyId}-chev" style="font-size:0.7rem;color:var(--muted)">▼</span></div>` : ''}
       <div id="${cardBodyId}">${fields}</div>
     </div>`;
   }).filter(Boolean).join('');
@@ -3428,7 +3442,7 @@ function renderMobileAnkiPanel(questionId) {
       return `<div class="anki-field">
         <div class="anki-field-header" onclick="toggleAnkiField('${fid}','${f.key}')">
           <span class="anki-field-label ${f.cls}">${f.label}</span>
-          <span class="anki-field-chevron ${fOpen?'open':''}" id="${fid}-chev">${fOpen?'▼':'▶'}</span>
+          <span class="anki-field-chevron ${fOpen?'open':''}" id="${fid}-chev">${fOpen?SVG_CHEVRON_DOWN:SVG_CHEVRON_RIGHT}</span>
         </div>
         <div class="anki-field-body open" id="${fid}">${val}</div>
       </div>`;
@@ -3436,7 +3450,7 @@ function renderMobileAnkiPanel(questionId) {
     if (!fields.trim()) return '';
     const mCardBodyId = `manki-card-${questionId}-${ci}`;
     return `<div class="anki-card-item" style="margin-bottom:0.6rem">
-      ${cards.length > 1 ? `<div class="anki-card-num" onclick="toggleAnkiCard('${mCardBodyId}')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between"><span><span style="color:var(--accent);opacity:0.8">▣</span> CARD ${ci+1} / ${cards.length}</span><span id="${mCardBodyId}-chev" style="font-size:0.7rem;color:var(--muted)">▼</span></div>` : ''}
+      ${cards.length > 1 ? `<div class="anki-card-num" onclick="toggleAnkiCard('${mCardBodyId}')" style="cursor:pointer;display:flex;align-items:center;justify-content:space-between"><span><span style="color:var(--accent);opacity:0.8"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></span> CARD ${ci+1} / ${cards.length}</span><span id="${mCardBodyId}-chev" style="font-size:0.7rem;color:var(--muted)">▼</span></div>` : ''}
       <div id="${mCardBodyId}">${fields}</div>
     </div>`;
   }).filter(Boolean).join('');
@@ -3449,7 +3463,7 @@ function toggleMobileAnkiPanel(questionId) {
   const isOpen = body.style.display !== 'none';
   ankiPanelVisible = !isOpen;
   body.style.display = isOpen ? 'none' : 'block';
-  if (chev) chev.textContent = isOpen ? '▼' : '▲';
+  if (chev) setChevron(chev, isOpen ? 'down' : 'up');
 }
 
 function toggleAnkiField(id, fieldKey) {
@@ -3457,7 +3471,7 @@ function toggleAnkiField(id, fieldKey) {
   const chev = document.getElementById(id + '-chev');
   if (!body) return;
   const isOpen = body.classList.toggle('open');
-  if (chev) { chev.classList.toggle('open', isOpen); chev.textContent = isOpen ? '▼' : '▶'; }
+  if (chev) { chev.classList.toggle('open', isOpen); setChevron(chev, isOpen ? 'down' : 'right'); }
   // Persist field collapse state across questions
   if (fieldKey) ankiFieldCollapse[fieldKey] = isOpen;
 }
@@ -3467,7 +3481,7 @@ function toggleAnkiCard(cardBodyId) {
   const chev = document.getElementById(cardBodyId + '-chev');
   if (!body) return;
   const isHidden = body.classList.toggle('card-body-collapsed');
-  if (chev) chev.textContent = isHidden ? '▶' : '▼';
+  if (chev) setChevron(chev, isHidden ? 'right' : 'down');
 }
 function updateGlobalProgress() {
   const dc = Object.keys(done).length;
@@ -3523,14 +3537,15 @@ function toggleSidebar() {
 // ── SETTINGS DROPDOWN ─────────────────────────────────────────────────────────
 function toggleAnkiSettingsBtn() {
   const btn = document.getElementById('anki-settings-btn');
+  const mbtn = document.getElementById('mobile-anki-settings-btn');
   const overlay = document.getElementById('anki-settings-overlay');
   const isOpen = overlay.classList.contains('open');
   if (isOpen) {
     closeAnkiSettings();
-    if (btn) { btn.style.color = 'var(--muted)'; btn.style.borderColor = 'transparent'; btn.style.background = 'none'; }
+    [btn, mbtn].forEach(b => { if (b) { b.style.color = 'var(--text)'; b.style.borderColor = 'var(--border)'; b.style.background = 'var(--surface2)'; b.style.opacity = '0.75'; }});
   } else {
     openAnkiSettings();
-    if (btn) { btn.style.color = 'var(--accent)'; btn.style.borderColor = 'var(--accent)'; btn.style.background = 'rgba(79,156,249,0.1)'; }
+    [btn, mbtn].forEach(b => { if (b) { b.style.color = 'var(--accent)'; b.style.borderColor = 'var(--accent)'; b.style.background = 'rgba(79,156,249,0.1)'; b.style.opacity = '1'; }});
   }
 }
 
@@ -3551,8 +3566,10 @@ function openAnkiSettings() {
 }
 function closeAnkiSettings() {
   document.getElementById('anki-settings-overlay').classList.remove('open');
-  const btn = document.getElementById('anki-settings-btn');
-  if (btn) { btn.style.color = 'var(--muted)'; btn.style.borderColor = 'transparent'; btn.style.background = 'none'; }
+  ['anki-settings-btn','mobile-anki-settings-btn'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) { b.style.color = 'var(--text)'; b.style.borderColor = 'var(--border)'; b.style.background = 'var(--surface2)'; b.style.opacity = '0.75'; }
+  });
 }
 function toggleAnkiFieldConfig(key, enabled) {
   ankiFieldsConfig[key] = enabled;
@@ -3603,7 +3620,7 @@ function toggleNotesPanel() {
   if (!body) return;
   const open = body.style.display !== 'none';
   body.style.display = open ? 'none' : 'flex';
-  if (chev) chev.textContent = open ? '▼' : '▲';
+  if (chev) { if (open) setChevron(chev,'down'); else setChevron(chev,'right'); }
 }
 
 // ── IMAGES ────────────────────────────────────────────────────────────────────
@@ -4393,7 +4410,7 @@ window.addEventListener('load', () => {
   <div class="anki-settings-modal">
     <div class="anki-settings-title">
       <span>⚙ Anki Card Fields</span>
-      <button class="anki-settings-close" onclick="closeAnkiSettings()">✕</button>
+      <button class="anki-settings-close" onclick="closeAnkiSettings()"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div id="anki-field-toggles"></div>
   </div>
