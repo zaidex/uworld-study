@@ -2241,7 +2241,7 @@ function renderQuestion() {
           ANKI CARDS
         </span>
         <div style="display:flex;align-items:center;gap:0.4rem">
-          <button id="mobile-anki-settings-btn" onclick="event.stopPropagation();toggleAnkiSettingsBtn()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:0.8rem;padding:0.2rem 0.35rem;border-radius:5px;line-height:1;opacity:0.75;transition:all 0.15s" onmouseenter="this.style.opacity='1';this.style.borderColor='var(--accent)'" onmouseleave="this.style.opacity='0.75';this.style.borderColor='var(--border)'" title="Field settings">⚙</button>
+          <button id="mobile-anki-settings-btn" onclick="event.stopPropagation();toggleAnkiSettingsBtn()" style="background:none;border:none;color:var(--muted);cursor:pointer;padding:0.15rem 0.3rem;border-radius:4px;line-height:1;display:flex;align-items:center;opacity:0.7;transition:all 0.15s" title="Field settings"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
           <span style="font-size:0.7rem;color:var(--muted)" id="mobile-anki-chevron" style="display:flex;align-items:center;color:var(--muted)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
         </div>
       </div>
@@ -2257,7 +2257,7 @@ function renderQuestion() {
             ANKI CARDS
           </div>
           <div style="display:flex;align-items:center;gap:0.6rem">
-            <button id="anki-settings-btn" onclick="event.stopPropagation();toggleAnkiSettingsBtn()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:0.82rem;padding:0.25rem 0.45rem;border-radius:5px;line-height:1;transition:all 0.15s;opacity:0.75" onmouseenter="this.style.opacity='1';this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseleave="if(!document.getElementById('anki-settings-overlay').classList.contains('open')){this.style.opacity='0.75';this.style.borderColor='var(--border)';this.style.color='var(--text)'}" title="Field settings">⚙</button>
+            <button id="anki-settings-btn" onclick="event.stopPropagation();toggleAnkiSettingsBtn()" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);cursor:pointer;padding:0.2rem 0.4rem;border-radius:5px;line-height:1;display:flex;align-items:center;transition:all 0.15s;opacity:0.8" onmouseenter="this.style.opacity='1';this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseleave="if(!document.getElementById('anki-settings-overlay').classList.contains('open')){this.style.opacity='0.8';this.style.borderColor='var(--border)';this.style.color='var(--muted)'}" title="Field settings"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></button>
             <span id="desktop-anki-chevron" style="display:flex;align-items:center;color:var(--muted)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></span>
           </div>
         </div>
@@ -2302,7 +2302,7 @@ function renderQuestion() {
       const nav = document.querySelector('.mobile-nav');
       if (nav) nav.style.display = 'none';
       if (mprev) mprev.disabled = (currentQ === 0);
-      if (mnext) mnext.textContent = isLast ? 'Finish' : 'Next <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+      if (mnext) mnext.innerHTML = isLast ? 'Finish' : 'Next &nbsp;' + SVG_CHEVRON_RIGHT.replace('width="10"','width="12"').replace('height="10"','height="12"');
     }
   } else if (bar) {
     bar.style.display = 'none';
