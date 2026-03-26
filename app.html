@@ -75,7 +75,7 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
   display: flex; align-items: center; gap: 0.4rem;
   font-family: 'IBM Plex Mono', monospace; letter-spacing: 0.05em;
 }
-.anki-panel-status { font-size: 0.65rem; font-family: 'IBM Plex Mono', monospace; color: var(--muted); }
+.anki-panel-status { display: none; }
 .anki-panel-toggle {
   background: none; border: none; color: var(--muted); cursor: pointer;
   font-size: 0.75rem; padding: 0.2rem 0.4rem; border-radius: 4px; transition: all 0.15s;
@@ -475,21 +475,73 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
 
 /* ── SETTINGS DROPDOWN ───────────────────────────────────────────────────────── */
 .settings-wrap { position: relative; }
+/* ── Anki Fields Modal ─────────────────────────────────────── */
+.anki-settings-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.6); z-index: 1000;
+  align-items: center; justify-content: center;
+}
+.anki-settings-overlay.open { display: flex; }
+.anki-settings-modal {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; padding: 1.5rem; width: 340px; max-width: 90vw;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+.anki-settings-title {
+  font-size: 0.85rem; font-weight: 600; color: var(--text);
+  font-family: 'IBM Plex Mono', monospace; margin-bottom: 1rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.anki-settings-close {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 1.1rem; padding: 0; line-height: 1;
+}
+.anki-settings-close:hover { color: var(--text); }
+.anki-field-toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.55rem 0; border-bottom: 1px solid var(--border);
+}
+.anki-field-toggle-row:last-child { border-bottom: none; }
+.anki-field-toggle-label { font-size: 0.82rem; color: var(--text); }
+.anki-toggle-switch {
+  position: relative; width: 36px; height: 20px; flex-shrink: 0;
+}
+.anki-toggle-switch input { opacity: 0; width: 0; height: 0; }
+.anki-toggle-slider {
+  position: absolute; inset: 0; background: var(--surface2);
+  border-radius: 20px; cursor: pointer; transition: background 0.2s;
+  border: 1px solid var(--border);
+}
+.anki-toggle-slider:before {
+  content: ''; position: absolute; height: 14px; width: 14px;
+  left: 2px; bottom: 2px; background: var(--muted);
+  border-radius: 50%; transition: 0.2s;
+}
+.anki-toggle-switch input:checked + .anki-toggle-slider { background: var(--accent); border-color: var(--accent); }
+.anki-toggle-switch input:checked + .anki-toggle-slider:before { transform: translateX(16px); background: #fff; }
+
 .settings-dropdown {
   display: none;
-  position: absolute; top: calc(100% + 6px); right: 0;
+  position: absolute; top: calc(100% + 8px); right: 0;
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 8px; min-width: 180px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  border-radius: 12px; min-width: 210px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.45);
   z-index: 500; overflow: hidden;
+  padding: 0.4rem 0;
 }
 .settings-dropdown.open { display: block; }
 .settings-item {
   padding: 0.6rem 1rem; font-size: 0.8rem; cursor: pointer;
-  color: var(--muted); transition: background 0.12s, color 0.12s;
+  color: var(--text); transition: background 0.12s, color 0.12s;
   font-family: 'IBM Plex Sans', sans-serif;
+  display: flex; align-items: center; gap: 0.65rem;
 }
 .settings-item:hover { background: var(--surface2); color: var(--text); }
+.settings-icon {
+  width: 22px; height: 22px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; flex-shrink: 0;
+}
 .settings-item.danger:hover { color: var(--danger); }
 .settings-divider { height: 1px; background: var(--border); margin: 0.25rem 0; }
 .settings-font-row { display: flex; align-items: center; justify-content: space-between; cursor: default; }
@@ -1306,8 +1358,13 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
     <div class="settings-wrap" id="settings-wrap">
       <button class="btn-sm" onclick="toggleSettings(event)">⚙ Settings</button>
       <div class="settings-dropdown" id="settings-dropdown">
-        <div class="settings-item settings-font-row">
-          <span>Text size</span>
+        <div class="settings-item settings-font-row" style="padding:0.55rem 1rem;">
+          <div style="display:flex;align-items:center;gap:0.65rem">
+            <span class="settings-icon" style="background:rgba(167,139,250,0.15);color:#a78bfa">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            </span>
+            <span>Text size</span>
+          </div>
           <div class="font-control-inline">
             <button class="font-btn" onclick="event.stopPropagation();changeFontSize(-1)">−</button>
             <span class="font-size-val" id="font-size-val">M</span>
@@ -1315,12 +1372,32 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
           </div>
         </div>
         <div class="settings-divider"></div>
-        <div class="settings-item" onclick="exportProgress()">⬇ Export progress</div>
-        <div class="settings-item" onclick="importProgress()">⬆ Import progress</div>
+        <div class="settings-item" onclick="exportProgress()">
+          <span class="settings-icon" style="background:rgba(79,156,249,0.15);color:#4f9cf9">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </span>
+          Export progress
+        </div>
+        <div class="settings-item" onclick="importProgress()">
+          <span class="settings-icon" style="background:rgba(62,207,142,0.15);color:#3ecf8e">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </span>
+          Import progress
+        </div>
         <div class="settings-divider"></div>
-        <div class="settings-item danger" onclick="confirmReset()">✕ Reset all progress</div>
+        <div class="settings-item danger" onclick="confirmReset()" style="color:#f87171">
+          <span class="settings-icon" style="background:rgba(248,113,113,0.15);color:#f87171">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </span>
+          Reset all progress
+        </div>
         <div class="settings-divider"></div>
-        <div class="settings-item" onclick="signOut()" id="logout-btn" style="display:none">⎋ Sign out <span id="logout-email" style="font-size:0.65rem;color:var(--muted)"></span></div>
+        <div class="settings-item" onclick="signOut()" id="logout-btn" style="display:none">
+          <span class="settings-icon" style="background:rgba(251,146,60,0.15);color:#fb923c">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </span>
+          Sign out <span id="logout-email" style="font-size:0.65rem;color:var(--muted);margin-left:auto"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -1723,6 +1800,7 @@ async function syncToCloud() {
       daily_counts: getDailyCounts(),
       highlights,
       font_size: fontSizeIdx,
+      anki_fields: ankiFieldsConfig,
       updated_at: new Date().toISOString()
     };
     const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?auth_user_id=eq.${uid}`, {
@@ -1743,7 +1821,7 @@ async function loadFromCloud() {
   setSyncStatus('syncing');
   try {
     const uid = getUserId();
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?auth_user_id=eq.${uid}&select=done,flags,notes,images,daily_counts,highlights,font_size,cq_session&order=updated_at.desc&limit=1`, { headers: getHeaders() });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/progress?auth_user_id=eq.${uid}&select=done,flags,notes,images,daily_counts,highlights,font_size,cq_session,anki_fields&order=updated_at.desc&limit=1`, { headers: getHeaders() });
     console.log('loadFromCloud: status', res.status);
     const text = await res.text();
     console.log('loadFromCloud: response', text.slice(0, 300));
@@ -1779,6 +1857,7 @@ async function loadFromCloud() {
       } catch(e) {}
       console.log('loadFromCloud: done keys loaded', Object.keys(done).length);
       if (rows[0].cq_session && typeof cqSession !== "undefined") { cqSession = rows[0].cq_session; }
+      if (rows[0].anki_fields && typeof rows[0].anki_fields === 'object') { ankiFieldsConfig = rows[0].anki_fields; }
     } else {
       // No row — clear local data then create row immediately
       done = {}; flags = {}; notes = {}; images = {}; highlights = {}; reviewDone = {};
@@ -1796,7 +1875,7 @@ async function loadFromCloud() {
           body: JSON.stringify({
             auth_user_id: uid2, user_id: uid2,
             done: {}, flags: {}, notes: {}, images: {}, highlights: {},
-            cq_session: {}, daily_counts: {}, font_size: fontSizeIdx,
+            cq_session: {}, daily_counts: {}, font_size: fontSizeIdx, anki_fields: {},
             updated_at: new Date().toISOString()
           })
         });
@@ -2172,7 +2251,7 @@ function renderQuestion() {
             ANKI CARDS
           </div>
           <div style="display:flex;align-items:center;gap:0.6rem">
-            <span class="anki-panel-status" id="anki-panel-status"></span>
+            <button id="anki-settings-btn" onclick="event.stopPropagation();toggleAnkiSettingsBtn()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:0.82rem;padding:0.25rem 0.45rem;border-radius:5px;line-height:1;transition:all 0.15s;opacity:0.75" onmouseenter="this.style.opacity='1';this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseleave="if(!document.getElementById('anki-settings-overlay').classList.contains('open')){this.style.opacity='0.75';this.style.borderColor='var(--border)';this.style.color='var(--text)'}" title="Field settings">⚙</button>
             <span id="desktop-anki-chevron" style="font-size:0.7rem;color:var(--muted)">▲</span>
           </div>
         </div>
@@ -3077,7 +3156,22 @@ let ankiCardIndex = null;
 let ankiDataLoading = false;
 let ankiDataLoaded = false;
 let ankiPanelVisible = true;
-let ankiCardCollapse = {};  // not persisted — cards always open per question
+let ankiCardCollapse = {};
+// Which anki fields are enabled — persisted to cloud
+const ANKI_ALL_FIELDS = [
+  { key: 'text',                label: 'Text'                 },
+  { key: 'extra',               label: 'Extra'                },
+  { key: 'lectureNotes',        label: 'Lecture Notes'        },
+  { key: 'additionalResources', label: 'Additional Resources' },
+  { key: 'sketchy',             label: 'Sketchy'              },
+  { key: 'sketchy2',            label: 'Sketchy 2'            },
+  { key: 'sketchyExtra',        label: 'Sketchy Extra'        },
+];
+// Default: all enabled. Stored as object {key: true/false}
+let ankiFieldsConfig = {};
+function getAnkiFieldEnabled(key) {
+  return ankiFieldsConfig[key] !== false; // default on
+}  // not persisted — cards always open per question
 let ankiFieldCollapse = {}; // {fieldId_key: true/false} — persists field collapse
 
 function toggleDesktopAnkiPanel() {
@@ -3164,18 +3258,20 @@ function parseAnkiCards(text) {
     if (cols.length < 2) continue;
     // Exact field positions from AnKingOverhaul:
     // 0=Text, 1=Extra, 2=Lecture Notes, 15=Additional Resources, 18=Tags
-    const textField     = fixImageSrcs(cols[0]  || '');
-    const extraField    = fixImageSrcs(cols[1]  || '');
-    const lectureField  = fixImageSrcs(cols[2]  || '');
-    const sketchyField  = fixImageSrcs(cols[7]  || '');
-    const resourceField = fixImageSrcs(cols[15] || '');
+    const textField       = fixImageSrcs(cols[0]  || '');
+    const extraField      = fixImageSrcs(cols[1]  || '');
+    const lectureField    = fixImageSrcs(cols[2]  || '');
+    const sketchyField    = fixImageSrcs(cols[7]  || '');
+    const sketchy2Field   = fixImageSrcs(cols[8]  || '');
+    const sketchyExtraField = fixImageSrcs(cols[9] || '');
+    const resourceField   = fixImageSrcs(cols[15] || '');
     // Always use last column for tags
     const tagsCol = cols[cols.length - 1] || '';
     // Match #UWorld followed by any ::word:: segments then ::ID (4+ digits = real UWorld ID)
     const idMatches = tagsCol.match(/#UWorld(?:::[^:\s\d][^:\s]*)*::(\d{4,})/g) || [];
     const ids = [...new Set(idMatches.map(m => m.match(/::(\d+)$/)[1]))];
     if (!ids.length) continue;
-    const card = { text: textField, extra: extraField, lectureNotes: lectureField, sketchy: sketchyField, additionalResources: resourceField };
+    const card = { text: textField, extra: extraField, lectureNotes: lectureField, sketchy: sketchyField, sketchy2: sketchy2Field, sketchyExtra: sketchyExtraField, additionalResources: resourceField };
     for (const id of ids) {
       if (!ankiCardIndex[id]) ankiCardIndex[id] = [];
       ankiCardIndex[id].push(card);
@@ -3249,7 +3345,6 @@ async function loadAnkiCards(questionId) {
 }
 
 function renderAnkiPanel(questionId) {
-  console.log('[RENDER] renderAnkiPanel for', questionId);
   const body = document.getElementById('anki-panel-body');
   const empty = document.getElementById('anki-panel-empty');
 
@@ -3271,7 +3366,9 @@ function renderAnkiPanel(questionId) {
     { key: 'lectureNotes',        label: 'Lecture Notes',        cls: 'lecture'   },
     { key: 'additionalResources', label: 'Additional Resources', cls: 'resources' },
     { key: 'sketchy',             label: 'Sketchy',              cls: 'sketchy'   },
-  ];
+    { key: 'sketchy2',            label: 'Sketchy 2',            cls: 'sketchy'   },
+    { key: 'sketchyExtra',        label: 'Sketchy Extra',        cls: 'sketchy'   },
+  ].filter(f => getAnkiFieldEnabled(f.key));
 
   body.innerHTML = cards.map((card, ci) => {
     const fields = FIELDS.map(f => {
@@ -3316,7 +3413,9 @@ function renderMobileAnkiPanel(questionId) {
     { key: 'lectureNotes',        label: 'Lecture Notes',        cls: 'lecture'   },
     { key: 'additionalResources', label: 'Additional Resources', cls: 'resources' },
     { key: 'sketchy',             label: 'Sketchy',              cls: 'sketchy'   },
-  ];
+    { key: 'sketchy2',            label: 'Sketchy 2',            cls: 'sketchy'   },
+    { key: 'sketchyExtra',        label: 'Sketchy Extra',        cls: 'sketchy'   },
+  ].filter(f => getAnkiFieldEnabled(f.key));
   body.innerHTML = cards.map((card, ci) => {
     const fields = FIELDS.map(f => {
       const val = card[f.key];
@@ -3361,7 +3460,6 @@ function toggleAnkiField(id, fieldKey) {
 }
 
 function toggleAnkiCard(cardBodyId) {
-  console.log('[TOGGLE] called for', cardBodyId, new Error().stack.split('\n')[2]);
   const body = document.getElementById(cardBodyId);
   const chev = document.getElementById(cardBodyId + '-chev');
   if (!body) return;
@@ -3420,6 +3518,51 @@ function toggleSidebar() {
 }
 
 // ── SETTINGS DROPDOWN ─────────────────────────────────────────────────────────
+function toggleAnkiSettingsBtn() {
+  const btn = document.getElementById('anki-settings-btn');
+  const overlay = document.getElementById('anki-settings-overlay');
+  const isOpen = overlay.classList.contains('open');
+  if (isOpen) {
+    closeAnkiSettings();
+    if (btn) { btn.style.color = 'var(--muted)'; btn.style.borderColor = 'transparent'; btn.style.background = 'none'; }
+  } else {
+    openAnkiSettings();
+    if (btn) { btn.style.color = 'var(--accent)'; btn.style.borderColor = 'var(--accent)'; btn.style.background = 'rgba(79,156,249,0.1)'; }
+  }
+}
+
+function openAnkiSettings() {
+  // Render toggles
+  const container = document.getElementById('anki-field-toggles');
+  container.innerHTML = ANKI_ALL_FIELDS.map(f => `
+    <div class="anki-field-toggle-row">
+      <span class="anki-field-toggle-label">${f.label}</span>
+      <label class="anki-toggle-switch">
+        <input type="checkbox" ${getAnkiFieldEnabled(f.key) ? 'checked' : ''}
+          onchange="toggleAnkiFieldConfig('${f.key}', this.checked)">
+        <span class="anki-toggle-slider"></span>
+      </label>
+    </div>
+  `).join('');
+  document.getElementById('anki-settings-overlay').classList.add('open');
+}
+function closeAnkiSettings() {
+  document.getElementById('anki-settings-overlay').classList.remove('open');
+  const btn = document.getElementById('anki-settings-btn');
+  if (btn) { btn.style.color = 'var(--muted)'; btn.style.borderColor = 'transparent'; btn.style.background = 'none'; }
+}
+function toggleAnkiFieldConfig(key, enabled) {
+  ankiFieldsConfig[key] = enabled;
+  // Re-render current question if open
+  if (currentSubsec !== null) {
+    const q = ALL_SUBSECS[currentSubsec].questions[currentQ];
+    if (q) loadAnkiCards(q.id);
+  }
+  // Sync to cloud
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncToCloud, 1000);
+}
+
 function toggleSettings(e) {
   e.stopPropagation();
   document.getElementById('settings-dropdown').classList.toggle('open');
@@ -4241,5 +4384,16 @@ window.addEventListener('load', () => {
   window.location.href = '/index.html';
 })();
 </script>
+
+<!-- Anki Fields Settings Modal -->
+<div class="anki-settings-overlay" id="anki-settings-overlay" onclick="if(event.target===this)closeAnkiSettings()">
+  <div class="anki-settings-modal">
+    <div class="anki-settings-title">
+      <span>⚙ Anki Card Fields</span>
+      <button class="anki-settings-close" onclick="closeAnkiSettings()">✕</button>
+    </div>
+    <div id="anki-field-toggles"></div>
+  </div>
+</div>
 </body>
 </html>
