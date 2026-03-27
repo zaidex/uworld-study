@@ -106,7 +106,7 @@ body.auth-visible { overflow: hidden; position: fixed; width: 100%; height: 100%
   padding: 0.45rem 0.75rem; cursor: pointer; user-select: none;
   transition: background 0.12s;
 }
-.anki-field-header:hover { background: rgba(79,156,249,0.04); }
+.anki-field-header:hover { background: none; }
 .anki-field-label {
   font-size: 0.65rem; font-weight: 600; font-family: 'IBM Plex Mono', monospace;
   text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent);
@@ -3393,13 +3393,11 @@ function renderAnkiPanel(questionId) {
       if (!val || !val.trim()) return '';
       const fieldId = `af-${ci}-${f.key}`;
       const fieldKey = f.key;
-      const fOpen = ankiFieldCollapse[fieldKey] !== false; // default open
       return `<div class="anki-field">
-        <div class="anki-field-header" onclick="toggleAnkiField('${fieldId}','${fieldKey}')">
+        <div class="anki-field-header" style="cursor:default">
           <span class="anki-field-label ${f.cls}">${f.label}</span>
-          <span class="anki-field-chevron ${fOpen?'open':''}" id="${fieldId}-chev">${fOpen?SVG_CHEVRON_DOWN:SVG_CHEVRON_RIGHT}</span>
         </div>
-        <div class="anki-field-body ${fOpen?'open':''}" id="${fieldId}">${val}</div>
+        <div class="anki-field-body open" id="${fieldId}">${val}</div>
       </div>`;
     }).join('');
 
@@ -3438,11 +3436,9 @@ function renderMobileAnkiPanel(questionId) {
       const val = card[f.key];
       if (!val || !val.trim()) return '';
       const fid = `maf-${ci}-${f.key}`;
-      const fOpen = ankiFieldCollapse[f.key] !== false;
       return `<div class="anki-field">
-        <div class="anki-field-header" onclick="toggleAnkiField('${fid}','${f.key}')">
+        <div class="anki-field-header" style="cursor:default">
           <span class="anki-field-label ${f.cls}">${f.label}</span>
-          <span class="anki-field-chevron ${fOpen?'open':''}" id="${fid}-chev">${fOpen?SVG_CHEVRON_DOWN:SVG_CHEVRON_RIGHT}</span>
         </div>
         <div class="anki-field-body open" id="${fid}">${val}</div>
       </div>`;
